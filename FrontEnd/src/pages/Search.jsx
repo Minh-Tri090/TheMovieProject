@@ -11,6 +11,10 @@ export default function Search() {
 	const location = useLocation();
 	const mode = location.state?.mode || 'default';
 
+	// read query param `q` from URL; if present we hide the page input and use it
+	const urlParams = new URLSearchParams(location.search);
+	const urlQuery = urlParams.get('q') || '';
+
 	const titleByMode = {
 		default: 'Tìm kiếm phim',
 		topic: 'Khám phá theo chủ đề',
@@ -52,7 +56,10 @@ export default function Search() {
 
 	useEffect(() => {
 		let mounted = true;
-		searchMovies('')
+		const q = urlQuery;
+		setQuery(q);
+		setLoading(true);
+		searchMovies(q)
 			.then((data) => {
 				if (!mounted) return;
 				setMovies(data);
@@ -65,7 +72,7 @@ export default function Search() {
 		return () => {
 			mounted = false;
 		};
-	}, []);
+	}, [location.search]);
 
 	const handleChange = async (e) => {
 		const value = e.target.value;
@@ -96,14 +103,17 @@ export default function Search() {
 						<span className="chip">Tổng: {movies.length}</span>
 					</div>
 
-					<div className="page-section" style={{ maxWidth: 480 }}>
-						<input
-							className="input"
-							placeholder={placeholderByMode[mode] ?? placeholderByMode.default}
-							value={query}
-							onChange={handleChange}
-						/>
-					</div>
+					{/* show page input only when there's no query in URL (header search active) */}
+					{!urlQuery && (
+						<div className="page-section" style={{ maxWidth: 480 }}>
+							<input
+								className="input"
+								placeholder={placeholderByMode[mode] ?? placeholderByMode.default}
+								value={query}
+								onChange={handleChange}
+							/>
+						</div>
+					)}
 
 					{loading && <div className="page-section alert alert-info">Đang tìm phim...</div>}
 

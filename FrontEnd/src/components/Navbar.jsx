@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiSearch, FiUser } from 'react-icons/fi';
 import { useAuth } from '../context/AuthContext';
@@ -8,7 +8,10 @@ export default function Navbar() {
 	const { user, login, register, logout } = useAuth();
 	const navigate = useNavigate();
 	const [isPanelOpen, setIsPanelOpen] = useState(false);
+	const [searchOpen, setSearchOpen] = useState(false);
+	const [searchQuery, setSearchQuery] = useState('');
 	const [openMenu, setOpenMenu] = useState(null);
+	const searchRef = useRef(null);
 	const [actors, setActors] = useState([]);
 	const [loadingActors, setLoadingActors] = useState(false);
 	const [activeTab, setActiveTab] = useState('login');
@@ -80,16 +83,41 @@ export default function Navbar() {
 	return (
 		<header className="site-header">
 			<div className="container site-header-inner header-layout">
-				<button
-					type="button"
-					className="header-search"
-					onClick={() => navigate('/search')}
-				>
-					<span className="header-search-icon">
-						<FiSearch />
-					</span>
-					<span className="header-search-text">Tìm kiếm phim, diễn viên</span>
-				</button>
+				<div className="header-search">
+					{!searchOpen && (
+						<button
+							type="button"
+							className="header-search-button"
+							onClick={() => {
+								setSearchOpen(true);
+								setTimeout(() => searchRef.current && searchRef.current.focus(), 50);
+							}}
+						>
+							<span className="header-search-icon">
+								<FiSearch />
+							</span>
+							<span className="header-search-text">Tìm kiếm phim, diễn viên</span>
+						</button>
+					)}
+					{searchOpen && (
+						<input
+							ref={searchRef}
+							type="search"
+							className="header-search-input input"
+							placeholder="Tìm kiếm phim, diễn viên..."
+							value={searchQuery}
+							onChange={(e) => {
+								const v = e.target.value;
+								setSearchQuery(v);
+								navigate(`/search?q=${encodeURIComponent(v)}`);
+							}}
+							onBlur={() => {
+								// keep input open if there's a query, otherwise close
+								if (!searchQuery) setSearchOpen(false);
+							}}
+						/>
+					)}
+				</div>
 
 				<nav className="header-menu">
 					<button type="button" className="header-menu-item" onClick={() => toggleMenu('topic')}>
@@ -106,6 +134,9 @@ export default function Navbar() {
 					</button>
 					<button type="button" className="header-menu-item" onClick={() => toggleMenu('actor')}>
 						Diễn viên
+					</button>
+					<button type="button" className="header-menu-item" onClick={() => navigate('/favorites')}>
+						Yêu thích
 					</button>
 				</nav>
 

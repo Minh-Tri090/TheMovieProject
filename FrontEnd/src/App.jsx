@@ -7,6 +7,7 @@ import MovieDetail from './pages/MovieDetail';
 import Search from './pages/Search';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Favorites from './pages/Favorites';
 
 export default function App() {
 	return (
@@ -18,6 +19,7 @@ export default function App() {
 						<Route path="/" element={<Home />} />
 						<Route path="/movie/:id" element={<MovieDetail />} />
 						<Route path="/search" element={<Search />} />
+						<Route path="/favorites" element={<Favorites />} />
 						<Route path="/login" element={<Login />} />
 						<Route path="/register" element={<Register />} />
 					</Routes>

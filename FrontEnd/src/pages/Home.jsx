@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import MovieCard from '../components/MovieCard';
-import { getMovies } from '../services/api';
+import { getMovies, addCustomMovie } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 export default function Home() {
 	const [movies, setMovies] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
 	const [query, setQuery] = useState('');
+	const [showAdd, setShowAdd] = useState(false);
+	const [draft, setDraft] = useState({ title: '', year: '', rating: '', poster: '', overview: '' });
+	const { user } = useAuth() || {};
 
 	useEffect(() => {
 		let mounted = true;
@@ -38,7 +42,7 @@ export default function Home() {
 						<div className="home-title-block">
 							<h1>Khám phá thế giới phim hôm nay</h1>
 							<p className="page-subtitle">
-								Các bộ phim đang được xem nhiều nhất trên TheMovie, cập nhật trực tiếp từ TMDB.
+								Các bộ phim đang được xem nhiều nhất trên TheMovie.
 							</p>
 							<div className="home-chips">
 								<span className="chip">Tổng: {movies.length}</span>
@@ -54,8 +58,81 @@ export default function Home() {
 								value={query}
 								onChange={(e) => setQuery(e.target.value)}
 							/>
+							{user && (
+								<button
+									type="button"
+									className="home-add-btn"
+									onClick={() => setShowAdd((v) => !v)}
+								>
+									{showAdd ? 'Đóng thêm phim' : 'Thêm phim (Admin)'}
+								</button>
+							)}
 						</div>
 					</div>
+
+					{showAdd && (
+						<div className="home-add-form">
+							<div className="home-add-grid">
+								<label className="form-field">
+									<span>Tiêu đề</span>
+									<input
+										className="input"
+										value={draft.title}
+										onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+									/>
+								</label>
+								<label className="form-field">
+									<span>Năm</span>
+									<input
+										className="input"
+										value={draft.year}
+										onChange={(e) => setDraft({ ...draft, year: e.target.value })}
+									/>
+								</label>
+								<label className="form-field">
+									<span>Rating</span>
+									<input
+										className="input"
+										value={draft.rating}
+										onChange={(e) => setDraft({ ...draft, rating: e.target.value })}
+									/>
+								</label>
+								<label className="form-field">
+									<span>Poster URL</span>
+									<input
+										className="input"
+										value={draft.poster}
+										onChange={(e) => setDraft({ ...draft, poster: e.target.value })}
+									/>
+								</label>
+							</div>
+							<label className="form-field" style={{ marginTop: 12 }}>
+								<span>Mô tả</span>
+								<textarea
+									className="input home-add-textarea"
+									value={draft.overview}
+									onChange={(e) => setDraft({ ...draft, overview: e.target.value })}
+								/>
+							</label>
+							<button
+								type="button"
+								onClick={() => {
+									const created = addCustomMovie({
+										title: draft.title,
+										year: draft.year,
+										rating: draft.rating ? Number(draft.rating) : null,
+										poster: draft.poster,
+										overview: draft.overview
+									});
+									setMovies((prev) => [created, ...prev]);
+									setDraft({ title: '', year: '', rating: '', poster: '', overview: '' });
+									setShowAdd(false);
+								}}
+							>
+								Lưu phim mới
+							</button>
+						</div>
+					)}
 
 					{featured && (
 						<div className="home-hero">
