@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import MovieCard from "../components/MovieCard";
-import { getMovies, addCustomMovie } from "../services/api";
+import { getMovies } from "../services/api"; // Chỉ giữ lại getMovies
 import { useAuth } from "../context/AuthContext";
 
 export default function Home() {
@@ -8,14 +8,6 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [query, setQuery] = useState("");
-  const [showAdd, setShowAdd] = useState(false);
-  const [draft, setDraft] = useState({
-    title: "",
-    year: "",
-    rating: "",
-    poster: "",
-    overview: "",
-  });
   const { user } = useAuth() || {};
 
   useEffect(() => {
@@ -36,10 +28,12 @@ export default function Home() {
     };
   }, []);
 
-  // Cách viết mới (An toàn 100%)
+  // Logic lọc phim an toàn (tránh lỗi toLowerCase nếu title bị undefined)
   const filtered = movies.filter((m) =>
     (m.title || "").toLowerCase().includes((query || "").toLowerCase()),
   );
+
+  // Xác định phim nổi bật (Banner) và danh sách phim còn lại
   const featured = !query && filtered.length > 0 ? filtered[0] : null;
   const list = featured ? filtered.slice(1) : filtered;
 
@@ -67,102 +61,21 @@ export default function Home() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
               />
-              {user && (
-                <button
-                  type="button"
-                  className="home-add-btn"
-                  onClick={() => setShowAdd((v) => !v)}
-                >
-                  {showAdd ? "Đóng thêm phim" : "Thêm phim (Admin)"}
-                </button>
-              )}
+              {/* ĐÃ XÓA NÚT THÊM PHIM ADMIN TẠI ĐÂY */}
             </div>
           </div>
 
-          {showAdd && (
-            <div className="home-add-form">
-              <div className="home-add-grid">
-                <label className="form-field">
-                  <span>Tiêu đề</span>
-                  <input
-                    className="input"
-                    value={draft.title}
-                    onChange={(e) =>
-                      setDraft({ ...draft, title: e.target.value })
-                    }
-                  />
-                </label>
-                <label className="form-field">
-                  <span>Năm</span>
-                  <input
-                    className="input"
-                    value={draft.year}
-                    onChange={(e) =>
-                      setDraft({ ...draft, year: e.target.value })
-                    }
-                  />
-                </label>
-                <label className="form-field">
-                  <span>Rating</span>
-                  <input
-                    className="input"
-                    value={draft.rating}
-                    onChange={(e) =>
-                      setDraft({ ...draft, rating: e.target.value })
-                    }
-                  />
-                </label>
-                <label className="form-field">
-                  <span>Poster URL</span>
-                  <input
-                    className="input"
-                    value={draft.poster}
-                    onChange={(e) =>
-                      setDraft({ ...draft, poster: e.target.value })
-                    }
-                  />
-                </label>
-              </div>
-              <label className="form-field" style={{ marginTop: 12 }}>
-                <span>Mô tả</span>
-                <textarea
-                  className="input home-add-textarea"
-                  value={draft.overview}
-                  onChange={(e) =>
-                    setDraft({ ...draft, overview: e.target.value })
-                  }
-                />
-              </label>
-              <button
-                type="button"
-                onClick={() => {
-                  const created = addCustomMovie({
-                    title: draft.title,
-                    year: draft.year,
-                    rating: draft.rating ? Number(draft.rating) : null,
-                    poster: draft.poster,
-                    overview: draft.overview,
-                  });
-                  setMovies((prev) => [created, ...prev]);
-                  setDraft({
-                    title: "",
-                    year: "",
-                    rating: "",
-                    poster: "",
-                    overview: "",
-                  });
-                  setShowAdd(false);
-                }}
-              >
-                Lưu phim mới
-              </button>
-            </div>
-          )}
+          {/* ĐÃ XÓA TOÀN BỘ FORM THÊM PHIM CŨ TẠI ĐÂY */}
 
+          {/* Phần Banner Phim Nổi Bật */}
           {featured && (
             <div className="home-hero">
               <div className="home-hero-poster">
-                <img src={featured.poster} alt={featured.title} />
+                {/* Sử dụng backdrop nếu có, không thì dùng poster */}
+                <img
+                  src={featured.backdrop || featured.poster}
+                  alt={featured.title}
+                />
               </div>
               <div className="home-hero-content">
                 <h2>{featured.title}</h2>
@@ -180,17 +93,19 @@ export default function Home() {
               Đang tải danh sách phim...
             </div>
           )}
+
           {error && (
             <div className="page-section alert alert-error">{error}</div>
           )}
 
+          {/* Grid danh sách phim */}
           <div className="page-section movie-grid">
             {list.length === 0 && !loading ? (
               <p className="text-muted">
                 Không tìm thấy phim phù hợp với từ khóa.
               </p>
             ) : (
-              list.map((m) => <MovieCard key={m.id} movie={m} />)
+              list.map((m) => <MovieCard key={m.id || m._id} movie={m} />)
             )}
           </div>
         </section>
