@@ -14,13 +14,18 @@ export const backendApi = axios.create({
 });
 
 // Interceptor: Tự động đính kèm Token vào Header của mỗi request gửi lên Backend
-backendApi.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+backendApi.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  },
+);
 
 // --- CÁC TIỆN ÍCH PHỤ TRỢ ---
 const PLACEHOLDER_SVG = encodeURIComponent(

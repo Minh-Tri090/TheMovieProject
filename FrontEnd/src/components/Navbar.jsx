@@ -1,95 +1,144 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { FiSearch, FiUser, FiPlus } from "react-icons/fi";
+import {
+  FiSearch,
+  FiUser,
+  FiPlus,
+  FiLogOut,
+  FiSettings,
+  FiChevronDown,
+  FiHeart,
+} from "react-icons/fi";
 import { useAuth } from "../context/AuthContext";
 import { getTrendingPeople, addCustomMovie } from "../services/api";
+import { toast } from "../utils/toast";
 
 export default function Navbar() {
   const { user, login, register, logout } = useAuth();
   const navigate = useNavigate();
 
-  // States cho Auth và Menu
-  const [isPanelOpen, setIsPanelOpen] = useState(false);
+  // --- REFS ---
+  const userMenuRef = useRef(null);
+  const searchRef = useRef(null);
+
+  // --- STATES GIAO DIỆN ---
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [openMenu, setOpenMenu] = useState(null);
-  const searchRef = useRef(null);
-  const [actors, setActors] = useState([]);
-  const [loadingActors, setLoadingActors] = useState(false);
-  const [activeTab, setActiveTab] = useState("login");
+  const [openMenu, setOpenMenu] = useState(null); // Quản lý Mega Menu (genre, country...)
 
-  // States cho Form Đăng nhập/Đăng ký
+  // --- STATES AUTH (LOGIN/REGISTER) ---
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // --- MỚI: States cho Form THÊM PHIM (Đã thêm trường backdrop) ---
+  // --- STATES DỮ LIỆU & THÊM PHIM ---
+  const [actors, setActors] = useState([]);
+  const [loadingActors, setLoadingActors] = useState(false);
   const [isAddMovieOpen, setIsAddMovieOpen] = useState(false);
   const [movieData, setMovieData] = useState({
     title: "",
     year: "",
     rating: "",
     poster: "",
-    backdrop: "", // Thêm trường này để hết lỗi ảnh banner
+    backdrop: "",
     overview: "",
   });
+  const [regRole, setRegRole] = useState("user");
+  const [regAdminKey, setRegAdminKey] = useState("");
 
-  const toggleMenu = (menu) => {
-    setOpenMenu((current) => (current === menu ? null : menu));
-  };
-
-  const closeMenu = () => setOpenMenu(null);
-
+  // --- EFFECT: Đóng dropdown khi bấm ra ngoài ---
   useEffect(() => {
-    if (openMenu !== "actor" || actors.length > 0 || loadingActors) return;
-    let cancelled = false;
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // --- EFFECT: Lấy dữ liệu diễn viên ---
+  useEffect(() => {
+    if (openMenu !== "actor" || actors.length > 0) return;
     (async () => {
       try {
         setLoadingActors(true);
         const data = await getTrendingPeople();
-        if (!cancelled) setActors(data.slice(0, 20));
+        setActors(data.slice(0, 20));
       } finally {
-        if (!cancelled) setLoadingActors(false);
+        setLoadingActors(false);
       }
     })();
-    return () => {
-      cancelled = true;
-    };
-  }, [openMenu, actors.length, loadingActors]);
+  }, [openMenu, actors.length]);
+
+  // --- HANDLERS ---
+  const toggleMenu = (menu) => setOpenMenu(openMenu === menu ? null : menu);
+  const closeMenu = () => setOpenMenu(null);
 
   const handleLogout = () => {
     logout();
+    setUserMenuOpen(false);
     navigate("/");
-    setIsPanelOpen(false);
   };
 
-  const togglePanel = () => {
-    if (user) return;
-    setIsPanelOpen((open) => !open);
-    setError("");
-  };
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleSubmit = async (e) => {
+  const handleAuthSubmit = async (e) => {
     e.preventDefault();
+
     setError("");
+
+    // 1. Kiểm tra mật khẩu khớp nhau
+
+    if (activeTab === "register" && password !== confirmPassword) {
+      return toast.error("Mật khẩu xác nhận không khớp Huy ơi!");
+    }
+
+    // 2. Kiểm tra mã Admin nếu đăng ký Admin
+
+    if (activeTab === "register" && regRole === "admin") {
+      if (regAdminKey !== "HUY_ADMIN_2026") {
+        // Đây là mã bí mật của bạn
+
+        return toast.error("Mã bí mật Admin không chính xác!");
+      }
+    }
+
     setLoading(true);
+
     try {
       if (activeTab === "login") {
         await login(email, password);
+
+        toast.success("Chào mừng Huy quay trở lại!");
+        // Tại Navbar.jsx
       } else {
-        await register({ name, email, password });
+        // Huy phải gửi CẢ role và adminKey thì Backend mới check được
+        await register({
+          name,
+          email,
+          password,
+          role: regRole,
+          adminKey: regAdminKey, // THÊM DÒNG NÀY VÀO ĐÂY
+        });
+        toast.success("Đăng ký tài khoản thành công!");
       }
+
       setIsPanelOpen(false);
     } catch (err) {
-      setError(err.message || "Có lỗi xảy ra");
+      setError(err.message);
+
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // Hàm xử lý gửi phim lên MongoDB
   const handleAddMovieSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -98,8 +147,8 @@ export default function Navbar() {
         ...movieData,
         rating: movieData.rating ? parseFloat(movieData.rating) : 0,
       };
-      await addCustomMovie(movieData);
-      alert("Thêm phim thành công!");
+      await addCustomMovie(finalData);
+      toast.success("Thêm phim thành công!");
       setMovieData({
         title: "",
         year: "",
@@ -120,7 +169,7 @@ export default function Navbar() {
   return (
     <header className="site-header" onMouseLeave={closeMenu}>
       <div className="container site-header-inner header-layout">
-        {/* Logo */}
+        {/* 1. Logo */}
         <div
           className="header-logo"
           onClick={() => navigate("/")}
@@ -129,30 +178,22 @@ export default function Navbar() {
           THE<span style={{ color: "#3b82f6" }}>MOVIE</span>
         </div>
 
-        {/* Search */}
+        {/* 2. Search */}
         <div className="header-search">
-          {!searchOpen && (
+          {!searchOpen ? (
             <button
-              type="button"
               className="header-search-button"
               onClick={() => {
                 setSearchOpen(true);
-                setTimeout(
-                  () => searchRef.current && searchRef.current.focus(),
-                  50,
-                );
+                setTimeout(() => searchRef.current?.focus(), 50);
               }}
             >
-              <span className="header-search-icon">
-                <FiSearch />
-              </span>
+              <FiSearch />{" "}
               <span className="header-search-text">Tìm kiếm...</span>
             </button>
-          )}
-          {searchOpen && (
+          ) : (
             <input
               ref={searchRef}
-              type="search"
               className="header-search-input input"
               placeholder="Phim, diễn viên..."
               value={searchQuery}
@@ -160,119 +201,173 @@ export default function Navbar() {
                 setSearchQuery(e.target.value);
                 navigate(`/search?q=${encodeURIComponent(e.target.value)}`);
               }}
-              onBlur={() => {
-                if (!searchQuery) setSearchOpen(false);
-              }}
+              onBlur={() => !searchQuery && setSearchOpen(false)}
             />
           )}
         </div>
 
-        {/* Main Menu */}
+        {/* 3. Navigation Links */}
         <nav className="header-menu">
           <button
-            type="button"
             className="header-menu-item"
             onClick={() => toggleMenu("topic")}
           >
             Chủ đề
           </button>
           <button
-            type="button"
             className="header-menu-item"
             onClick={() => toggleMenu("genre")}
           >
             Thể loại
           </button>
           <button
-            type="button"
-            className="header-menu-item"
-            onClick={() => toggleMenu("together")}
-          >
-            <span className="badge-new">NEW</span> Xem chung
-          </button>
-          <button
-            type="button"
             className="header-menu-item"
             onClick={() => toggleMenu("country")}
           >
             Quốc gia
           </button>
           <button
-            type="button"
             className="header-menu-item"
             onClick={() => toggleMenu("actor")}
           >
             Diễn viên
           </button>
 
-          {/* Nút Thêm Phim (Chỉ Admin/User) */}
-          {user && (
+          {user && user.role === "admin" && (
             <button
               type="button"
               className="header-menu-item text-sky-400 font-bold"
-              onClick={() => {
-                setIsAddMovieOpen(!isAddMovieOpen);
-                closeMenu();
-              }}
+              onClick={() => setIsAddMovieOpen(true)}
             >
               <FiPlus className="inline mr-1" /> Thêm phim
             </button>
           )}
-
-          <button
-            type="button"
-            className="header-menu-item"
-            onClick={() => navigate("/favorites")}
-          >
-            Yêu thích
-          </button>
         </nav>
 
-        {/* Member Area */}
-        <div className="header-member">
-          <button
-            type="button"
-            className="header-member-btn"
-            onClick={user ? handleLogout : togglePanel}
-          >
-            <span className="header-member-icon">
-              <FiUser />
-            </span>
-            <span>{user ? user.name || user.email : "Thành viên"}</span>
-          </button>
+        {/* 4. User Area (Dropdown) */}
+        <div className="header-member" ref={userMenuRef}>
+          {!user ? (
+            <button
+              className="header-member-btn"
+              onClick={() => setIsPanelOpen(!isPanelOpen)}
+            >
+              <FiUser /> <span>Thành viên</span>
+            </button>
+          ) : (
+            <div className="user-dropdown-wrapper">
+              <button
+                className={`header-member-btn ${userMenuOpen ? "active" : ""}`}
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+              >
+                <div className="user-avatar-mini">
+                  {user.name?.charAt(0).toUpperCase()}
+                </div>
+                <span className="member-text">{user.name}</span>
+                <FiChevronDown
+                  className={`chevron-icon ${userMenuOpen ? "rotate" : ""}`}
+                />
+              </button>
 
-          {/* Auth Panel */}
+              {userMenuOpen && (
+                <div className="user-dropdown-menu">
+                  <div className="dropdown-info">
+                    <p className="user-email">{user.email}</p>
+                    <span className="user-role-badge">
+                      {user.role || "Thành viên"}
+                    </span>
+                  </div>
+                  <hr className="dropdown-divider" />
+                  <button
+                    className="dropdown-item"
+                    onClick={() => navigate("/profile")}
+                  >
+                    <FiUser /> Trang cá nhân
+                  </button>
+                  <button
+                    className="dropdown-item"
+                    onClick={() => navigate("/favorites")}
+                  >
+                    <FiHeart /> Phim yêu thích
+                  </button>
+                  <button
+                    className="dropdown-item"
+                    onClick={() => navigate("/settings")}
+                  >
+                    <FiSettings /> Cài đặt
+                  </button>
+                  <hr className="dropdown-divider" />
+                  <button
+                    className="dropdown-item logout-item"
+                    onClick={handleLogout}
+                  >
+                    <FiLogOut /> Đăng xuất
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Panel Đăng nhập / Đăng ký */}
           {!user && isPanelOpen && (
             <div className="auth-panel">
               <div className="auth-panel-tabs">
                 <button
-                  type="button"
-                  className={`auth-tab ${activeTab === "login" ? "auth-tab-active" : ""}`}
+                  className={`auth-tab ${activeTab === "login" ? "active" : ""}`}
                   onClick={() => setActiveTab("login")}
                 >
                   Đăng nhập
                 </button>
                 <button
-                  type="button"
-                  className={`auth-tab ${activeTab === "register" ? "auth-tab-active" : ""}`}
+                  className={`auth-tab ${activeTab === "register" ? "active" : ""}`}
                   onClick={() => setActiveTab("register")}
                 >
                   Đăng ký
                 </button>
               </div>
-              <form onSubmit={handleSubmit} className="form auth-form">
+              <form onSubmit={handleAuthSubmit} className="form auth-form">
+                {/* 1. Chỉ hiện khi Đăng ký */}
                 {activeTab === "register" && (
-                  <label className="form-field">
-                    <span>Họ tên</span>
-                    <input
-                      className="input"
-                      type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      required
-                    />
-                  </label>
+                  <>
+                    <label className="form-field">
+                      <span>Họ tên</span>
+                      <input
+                        className="input"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required
+                      />
+                    </label>
+
+                    <label className="form-field">
+                      <span>Quyền hạn</span>
+                      <select
+                        className="input"
+                        value={regRole || "user"}
+                        onChange={(e) => setRegRole(e.target.value)}
+                      >
+                        <option value="user">Người dùng</option>
+                        <option value="admin">Quản trị viên</option>
+                      </select>
+                    </label>
+
+                    {regRole === "admin" && (
+                      <label className="form-field">
+                        <span className="text-yellow-500 font-bold">
+                          Mã bí mật Admin
+                        </span>
+                        <input
+                          className="input border-yellow-600"
+                          type="password"
+                          placeholder="Nhập mã xác minh"
+                          value={regAdminKey} // Thêm dòng này
+                          onChange={(e) => setRegAdminKey(e.target.value)}
+                        />
+                      </label>
+                    )}
+                  </>
                 )}
+
+                {/* 2. LUÔN HIỆN (Cả Đăng nhập & Đăng ký) */}
                 <label className="form-field">
                   <span>Email</span>
                   <input
@@ -283,6 +378,7 @@ export default function Navbar() {
                     required
                   />
                 </label>
+
                 <label className="form-field">
                   <span>Mật khẩu</span>
                   <input
@@ -291,11 +387,31 @@ export default function Navbar() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    minLength={6}
                   />
                 </label>
-                {error && <div className="alert alert-error">{error}</div>}
-                <button type="submit" disabled={loading}>
+
+                {/* 3. Xác nhận mật khẩu (Chỉ hiện khi Đăng ký) */}
+                {activeTab === "register" && (
+                  <label className="form-field">
+                    <span>Xác nhận mật khẩu</span>
+                    <input
+                      className="input"
+                      type="password"
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                    />
+                  </label>
+                )}
+
+                {error && (
+                  <div className="alert-error text-xs mt-2">{error}</div>
+                )}
+
+                <button
+                  type="submit"
+                  className="bg-sky-600 w-full mt-4"
+                  disabled={loading}
+                >
                   {loading
                     ? "Đang xử lý..."
                     : activeTab === "login"
@@ -306,11 +422,11 @@ export default function Navbar() {
             </div>
           )}
 
-          {/* Form Thêm Phim (Đã thêm ô nhập Backdrop) */}
+          {/* Form Thêm Phim (Modal) */}
           {user && isAddMovieOpen && (
-            <div className="auth-panel" style={{ width: "320px" }}>
-              <h3 className="p-3 text-center text-white border-b border-slate-700 font-bold">
-                Thêm Phim (Admin)
+            <div className="auth-panel add-movie-panel">
+              <h3 className="p-3 text-center border-b border-slate-700 font-bold">
+                Thêm Phim Mới
               </h3>
               <form
                 onSubmit={handleAddMovieSubmit}
@@ -318,7 +434,7 @@ export default function Navbar() {
               >
                 <input
                   className="input mb-2"
-                  placeholder="Tên phim"
+                  placeholder="Tiêu đề phim"
                   value={movieData.title}
                   onChange={(e) =>
                     setMovieData({ ...movieData, title: e.target.value })
@@ -345,28 +461,25 @@ export default function Navbar() {
                 </div>
                 <input
                   className="input mb-2"
-                  placeholder="Link ảnh Poster (Dọc)"
+                  placeholder="Link Poster (Dọc)"
                   value={movieData.poster}
                   onChange={(e) =>
                     setMovieData({ ...movieData, poster: e.target.value })
                   }
                   required
                 />
-
-                {/* --- Ô NHẬP BACKDROP QUAN TRỌNG --- */}
                 <input
                   className="input mb-2 border-sky-500"
-                  placeholder="Link ảnh Nền (Ngang - Backdrop)"
+                  placeholder="Link Backdrop (Ngang)"
                   value={movieData.backdrop}
                   onChange={(e) =>
                     setMovieData({ ...movieData, backdrop: e.target.value })
                   }
                   required
                 />
-
                 <textarea
                   className="input mb-2"
-                  placeholder="Mô tả phim"
+                  placeholder="Mô tả tóm tắt..."
                   value={movieData.overview}
                   onChange={(e) =>
                     setMovieData({ ...movieData, overview: e.target.value })
@@ -378,7 +491,7 @@ export default function Navbar() {
                   className="bg-sky-600 w-full font-bold"
                   disabled={loading}
                 >
-                  {loading ? "Đang lưu..." : "Xác nhận thêm"}
+                  Xác nhận lưu
                 </button>
               </form>
             </div>
@@ -386,11 +499,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* --- CÁC MENU PANEL GIỮ NGUYÊN --- */}
-      {openMenu && (
-        <button type="button" className="menu-scrim" onClick={closeMenu} />
-      )}
-
+      {/* --- MEGA MENUS (Topic, Genre, Country, Actor) --- */}
       {openMenu === "topic" && (
         <div className="topic-strip">
           <div className="topic-strip-inner">
@@ -406,69 +515,33 @@ export default function Navbar() {
             ].map((t) => (
               <div key={t} className="topic-card">
                 <div className="topic-card-title">{t}</div>
-                <div className="topic-card-link">Xem toàn bộ &gt;</div>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {openMenu === "genre" && (
+      {(openMenu === "genre" || openMenu === "country") && (
         <div className="mega-menu">
           <div className="container mega-menu-inner">
-            {[
-              "Hành động",
-              "Phiêu lưu",
-              "Hoạt hình",
-              "Hài",
-              "Hình sự",
-              "Tài liệu",
-              "Drama",
-              "Gia đình",
-              "Kỳ ảo",
-              "Lịch sử",
-              "Kinh dị",
-              "Nhạc phim",
-              "Bí ẩn",
-              "Lãng mạn",
-              "Viễn tưởng",
-              "Gây cấn",
-            ].map((g) => (
+            {(openMenu === "genre"
+              ? [
+                  "Hành động",
+                  "Hoạt hình",
+                  "Hài",
+                  "Kinh dị",
+                  "Lãng mạn",
+                  "Viễn tưởng",
+                ]
+              : ["Âu Mỹ", "Hàn Quốc", "Trung Quốc", "Việt Nam", "Thái Lan"]
+            ).map((item) => (
               <Link
-                key={g}
-                to={`/genre/${g}`}
+                key={item}
+                to={`/${openMenu}/${item}`}
                 className="mega-menu-item"
                 onClick={closeMenu}
               >
-                {g}
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {openMenu === "country" && (
-        <div className="mega-menu">
-          <div className="container mega-menu-inner">
-            {[
-              "Âu Mỹ",
-              "Hàn Quốc",
-              "Trung Quốc",
-              "Nhật Bản",
-              "Việt Nam",
-              "Thái Lan",
-              "Ấn Độ",
-              "Hồng Kông",
-              "Pháp",
-              "Đức",
-            ].map((c) => (
-              <Link
-                key={c}
-                to={`/country/${c}`}
-                className="mega-menu-item"
-                onClick={closeMenu}
-              >
-                {c}
+                {item}
               </Link>
             ))}
           </div>
@@ -477,19 +550,17 @@ export default function Navbar() {
 
       {openMenu === "actor" && (
         <div className="actor-panel">
-          <div className="container">
-            <div className="actor-grid">
-              {loadingActors ? (
-                <p>Đang tải diễn viên...</p>
-              ) : (
-                actors.map((a) => (
-                  <div key={a.id} className="actor-item">
-                    <img src={a.avatar} alt={a.name} className="actor-avatar" />
-                    <span>{a.name}</span>
-                  </div>
-                ))
-              )}
-            </div>
+          <div className="container actor-grid">
+            {loadingActors ? (
+              <p>Đang tải...</p>
+            ) : (
+              actors.map((a) => (
+                <div key={a.id} className="actor-item">
+                  <img src={a.avatar} alt={a.name} className="actor-avatar" />
+                  <span>{a.name}</span>
+                </div>
+              ))
+            )}
           </div>
         </div>
       )}

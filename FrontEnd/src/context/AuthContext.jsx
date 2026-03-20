@@ -21,33 +21,31 @@ export function AuthProvider({ children }) {
       });
       const { token, user: userData } = response.data;
 
-      // Lưu vào máy để duy trì đăng nhập khi F5
+      // THÊM DÒNG NÀY ĐỂ TEST
+      console.log("Dữ liệu User từ Backend trả về:", userData);
+
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(userData));
+
+      backendApi.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
       setUser(userData);
       return userData;
     } catch (error) {
-      // Đẩy lỗi ra ngoài để Form giao diện hiển thị (vd: Sai mật khẩu)
       throw new Error(error.response?.data?.message || "Đăng nhập thất bại");
     }
   };
 
   // Hàm đăng ký (Đã chuyển sang gọi API thật)
-  const register = async ({ name, email, password }) => {
+  // Tại AuthContext.jsx
+  const register = async (userData) => {
+    // Nhận nguyên cục data
     try {
-      const response = await backendApi.post("/auth/register", {
-        name,
-        email,
-        password,
-      });
-      const { token, user: userData } = response.data;
-
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(userData));
-
-      setUser(userData);
-      return userData;
+      const response = await backendApi.post("/auth/register", userData); // Gửi nguyên cục data lên
+      const { token, user: savedUser } = response.data;
+      // ... các bước lưu localStorage giữ nguyên ...
+      setUser(savedUser);
+      return savedUser;
     } catch (error) {
       throw new Error(error.response?.data?.message || "Đăng ký thất bại");
     }
@@ -57,7 +55,9 @@ export function AuthProvider({ children }) {
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    delete backendApi.defaults.headers.common["Authorization"];
     setUser(null);
+    window.location.href = "/";
   };
 
   return (
