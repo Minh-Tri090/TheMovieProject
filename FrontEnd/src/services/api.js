@@ -204,3 +204,12 @@ export async function addCustomMovie(movieData) {
 export const deleteMovie = async (id) => {
   return await backendApi.delete(`/movies/${id}`);
 };
+// Lấy danh sách phim yêu thích từ DB
+export const getFavorites = async () => {
+  return await backendApi.get("/users/favorites");
+};
+
+// Thêm hoặc Xóa phim khỏi yêu thích (Toggle)
+export const toggleFavoriteApi = async (movieId) => {
+  return await backendApi.post(`/users/favorite/${movieId}`);
+};

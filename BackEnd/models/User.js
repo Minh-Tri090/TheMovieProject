@@ -1,34 +1,43 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 
-const UserSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, "Vui lòng nhập tên"],
+const UserSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, "Vui lòng nhập tên"],
+    },
+    email: {
+      type: String,
+      required: [true, "Vui lòng nhập email"],
+      unique: true,
+      lowercase: true,
+      match: [/^\S+@\S+\.\S+$/, "Email không hợp lệ"],
+    },
+    password: {
+      type: String,
+      required: [true, "Vui lòng nhập mật khẩu"],
+      minlength: 6,
+      select: false, // Không trả về mật khẩu khi query dữ liệu
+    },
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+    favorites: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Movie", // Tham chiếu đến bảng Movie
+      },
+    ],
   },
-  email: {
-    type: String,
-    required: [true, "Vui lòng nhập email"],
-    unique: true,
-    lowercase: true,
-    match: [/^\S+@\S+\.\S+$/, "Email không hợp lệ"],
-  },
-  password: {
-    type: String,
-    required: [true, "Vui lòng nhập mật khẩu"],
-    minlength: 6,
-    select: false, // Không trả về mật khẩu khi query dữ liệu
-  },
-  role: {
-    type: String,
-    enum: ["user", "admin"],
-    default: "user",
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+  { timestamps: true },
+);
 
 /**
  * MIDDLEWARE MÃ HÓA MẬT KHẨU

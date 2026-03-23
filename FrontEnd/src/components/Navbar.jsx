@@ -354,7 +354,7 @@ export default function Navbar() {
                           type="password"
                           placeholder="Nhập mã xác minh"
                           value={regAdminKey} // Thêm dòng này
-                          onChange={(e) => setRegAdminKey(e.target.value)}
+                          onChange={(e) => setRegAdminKey(e.target.value)} // Sửa thành setRegAdminKey
                         />
                       </label>
                     )}

@@ -8,6 +8,7 @@ import { useAuth } from "../context/AuthContext"; // Import useAuth
 import { deleteMovie } from "../services/api";
 import { toast } from "../utils/toast"; // Import toast
 import Swal from "sweetalert2";
+import "./MovieCard.css";
 
 export default function MovieCard({ movie }) {
   // Lấy dữ liệu từ context an toàn (tránh lỗi undefined)
