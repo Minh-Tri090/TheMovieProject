@@ -51,6 +51,9 @@ export default function Navbar() {
   const [regRole, setRegRole] = useState("user");
   const [regAdminKey, setRegAdminKey] = useState("");
 
+  // Import icon cho history
+  const FiClock = () => <span style={{ marginRight: "8px" }}>📋</span>;
+
   // --- EFFECT: Đóng dropdown khi bấm ra ngoài ---
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -288,6 +291,12 @@ export default function Navbar() {
                     onClick={() => navigate("/favorites")}
                   >
                     <FiHeart /> Phim yêu thích
+                  </button>
+                  <button
+                    className="dropdown-item"
+                    onClick={() => navigate("/history")}
+                  >
+                    <FiClock /> Lịch sử xem
                   </button>
                   <button
                     className="dropdown-item"

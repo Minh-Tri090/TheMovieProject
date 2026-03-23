@@ -6,6 +6,7 @@ require("dotenv").config();
 const app = express();
 const authRoutes = require("./routes/auth");
 const movieRoutes = require("./routes/movie"); // Dòng 1
+const historyRoutes = require("./routes/history"); // Thêm lịch sử xem
 // Middleware
 app.use(cors());
 app.use(express.json());
@@ -24,6 +25,7 @@ app.get("/", (req, res) => {
 const PORT = process.env.PORT || 5000;
 app.use("/api/auth", authRoutes);
 app.use("/api/movies", movieRoutes);
+app.use("/api/history", historyRoutes); // Thêm route lịch sử xem
 app.listen(PORT, () => {
   console.log(`🚀 Server đang chạy tại: http://localhost:${PORT}`);
 });
