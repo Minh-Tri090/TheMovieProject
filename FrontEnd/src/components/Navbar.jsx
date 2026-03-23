@@ -47,6 +47,7 @@ export default function Navbar() {
     poster: "",
     backdrop: "",
     overview: "",
+    actors: "",
   });
   const [regRole, setRegRole] = useState("user");
   const [regAdminKey, setRegAdminKey] = useState("");
@@ -140,6 +141,7 @@ export default function Navbar() {
       const finalData = {
         ...movieData,
         rating: movieData.rating ? parseFloat(movieData.rating) : 0,
+        actors: movieData.actors.split(",").map((item) => item.trim()),
       };
       await addCustomMovie(finalData);
       toast.success("Thêm phim thành công!");
@@ -150,6 +152,7 @@ export default function Navbar() {
         poster: "",
         backdrop: "",
         overview: "",
+        actors: "",
       });
       setIsAddMovieOpen(false);
       window.location.reload();
@@ -470,6 +473,14 @@ export default function Navbar() {
                     setMovieData({ ...movieData, backdrop: e.target.value })
                   }
                   required
+                />
+                <input
+                  className="input mb-2 border-green-500" // Mình để border màu khác cho Huy dễ nhận diện
+                  placeholder="Diễn viên (Cách nhau bằng dấu phẩy, VD: Gong Yoo, IU)"
+                  value={movieData.actors}
+                  onChange={(e) =>
+                    setMovieData({ ...movieData, actors: e.target.value })
+                  }
                 />
                 <textarea
                   className="input mb-2"

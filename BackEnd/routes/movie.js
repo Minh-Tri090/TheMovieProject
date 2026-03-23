@@ -44,4 +44,40 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
+// routes/movie.js
+router.get("/actor/:actorName", async (req, res) => {
+  try {
+    const actorName = req.params.actorName;
+
+    // Cách query này sẽ tìm kiếm trong mảng actors
+    // xem có phần tử nào khớp với actorName (không phân biệt hoa thường)
+    const movies = await Movie.find({
+      actors: { $in: [new RegExp(actorName, "i")] },
+    });
+
+    console.log(`Tìm thấy ${movies.length} phim cho diễn viên: ${actorName}`);
+    res.json(movies);
+  } catch (error) {
+    res.status(500).json({ message: "Lỗi tìm phim theo diễn viên" });
+  }
+});
+router.get("/:id", async (req, res) => {
+  try {
+    const movie = await Movie.findById(req.params.id);
+
+    if (!movie) {
+      return res
+        .status(404)
+        .json({ message: "Phim này không tồn tại trong DB của Huy rồi!" });
+    }
+
+    res.json(movie);
+  } catch (error) {
+    console.error("Lỗi lấy chi tiết phim:", error);
+    // Nếu ID không đúng định dạng MongoDB, nó cũng nhảy vào catch
+    res
+      .status(500)
+      .json({ message: "Lỗi Server hoặc ID phim không đúng định dạng" });
+  }
+});
 module.exports = router;

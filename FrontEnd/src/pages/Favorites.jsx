@@ -1,31 +1,32 @@
-import React from 'react';
-import { useFavorites } from '../context/FavoriteContext';
-import MovieCard from '../components/MovieCard';
+import React from "react";
+import { useFavorites } from "../context/FavoriteContext";
+import MovieCard from "../components/MovieCard";
 
 export default function Favorites() {
-	const { favorites } = useFavorites() || { favorites: [] };
+  const { favorites, loading } = useFavorites();
 
-	return (
-		<main className="site-main">
-			<div className="container">
-				<section className="surface">
-					<div className="page-heading">
-						<div>
-							<h1>Phim yêu thích</h1>
-							<p className="page-subtitle">Danh sách các bộ phim bạn đã đánh dấu ❤️.</p>
-						</div>
-					</div>
+  return (
+    <div className="favorites-page container mt-20 p-5">
+      <h2 className="text-2xl font-bold mb-6 border-b border-slate-700 pb-2">
+        Danh sách phim yêu thích của Huy ❤️
+      </h2>
 
-					<div className="page-section movie-grid">
-						{favorites.length === 0 ? (
-							<p className="text-muted">Chưa có phim nào trong danh sách yêu thích.</p>
-						) : (
-							favorites.map((m) => <MovieCard key={m.id} movie={m} />)
-						)}
-					</div>
-				</section>
-			</div>
-		</main>
-	);
+      {loading ? (
+        <div className="text-center py-20">Đang tải danh sách...</div>
+      ) : favorites.length > 0 ? (
+        <div className="movies-grid">
+          {favorites.map((movie) => (
+            <MovieCard key={movie._id || movie.id} movie={movie} />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-20 text-slate-400">
+          <p className="text-4xl mb-4">🙊</p>
+          <p>
+            Huy chưa có phim yêu thích nào. Quay lại trang chủ để khám phá nhé!
+          </p>
+        </div>
+      )}
+    </div>
+  );
 }
-

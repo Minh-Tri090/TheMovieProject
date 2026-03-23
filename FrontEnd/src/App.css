@@ -917,3 +917,26 @@
 .brand span {
   color: #38bdf8; /* Màu xanh neon bạn đang dùng cho theme */
 }
+/* Bố cục lưới cho danh sách phim */
+.movies-grid {
+  display: grid;
+  /* Tự động chia cột: mỗi cột tối thiểu 180px, tối đa là 1 phần đều nhau */
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 25px; /* Khoảng cách giữa các card phim */
+  padding: 20px 0;
+}
+
+/* Đảm bảo trang Yêu thích không bị dính sát vào mép màn hình */
+.favorites-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 80px 20px 40px; /* Cách header 80px để không bị đè */
+}
+
+/* Tùy chỉnh tiêu đề trang */
+.favorites-page h2 {
+  color: #f8fafc;
+  font-size: 1.8rem;
+  margin-bottom: 30px;
+  text-align: left;
+}
