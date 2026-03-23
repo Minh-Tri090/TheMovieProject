@@ -90,21 +90,14 @@ export default function Navbar() {
 
   const handleAuthSubmit = async (e) => {
     e.preventDefault();
-
     setError("");
-
-    // 1. Kiểm tra mật khẩu khớp nhau
 
     if (activeTab === "register" && password !== confirmPassword) {
       return toast.error("Mật khẩu xác nhận không khớp Huy ơi!");
     }
 
-    // 2. Kiểm tra mã Admin nếu đăng ký Admin
-
     if (activeTab === "register" && regRole === "admin") {
       if (regAdminKey !== "HUY_ADMIN_2026") {
-        // Đây là mã bí mật của bạn
-
         return toast.error("Mã bí mật Admin không chính xác!");
       }
     }
@@ -113,26 +106,27 @@ export default function Navbar() {
 
     try {
       if (activeTab === "login") {
-        await login(email, password);
+        // 1. Hứng lấy dữ liệu user trả về từ hàm login
+        const resUser = await login(email, password);
 
-        toast.success("Chào mừng Huy quay trở lại!");
-        // Tại Navbar.jsx
+        // 2. Dùng Template Literals (dấu ` `) để truyền tên vào
+        toast.success(`Chào mừng ${resUser.name} quay trở lại!`);
       } else {
-        // Huy phải gửi CẢ role và adminKey thì Backend mới check được
-        await register({
+        // 3. Tương tự cho phần Đăng ký
+        const resUser = await register({
           name,
           email,
           password,
           role: regRole,
-          adminKey: regAdminKey, // THÊM DÒNG NÀY VÀO ĐÂY
+          adminKey: regAdminKey,
         });
-        toast.success("Đăng ký tài khoản thành công!");
+
+        toast.success(`Chúc mừng ${resUser.name} đã đăng ký thành công!`);
       }
 
       setIsPanelOpen(false);
     } catch (err) {
       setError(err.message);
-
       toast.error(err.message);
     } finally {
       setLoading(false);

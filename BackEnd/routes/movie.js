@@ -27,4 +27,21 @@ router.post("/add", async (req, res) => {
   }
 });
 
+router.delete("/:id", async (req, res) => {
+  try {
+    const movie = await Movie.findById(req.params.id);
+
+    if (!movie) {
+      return res
+        .status(404)
+        .json({ message: "Không tìm thấy phim này Huy ơi!" });
+    }
+
+    await movie.deleteOne();
+    res.json({ message: "Đã xóa phim thành công khỏi hệ thống!" });
+  } catch (error) {
+    res.status(500).json({ message: "Lỗi Server khi xóa phim" });
+  }
+});
+
 module.exports = router;
