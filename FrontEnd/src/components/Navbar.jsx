@@ -65,25 +65,69 @@ export default function Navbar() {
     setIsPanelOpen(false);
   };
 
+<<<<<<< Updated upstream
   const togglePanel = () => {
     if (user) return;
     setIsPanelOpen((open) => !open);
+=======
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const handleAuthSubmit = async (e) => {
+    e.preventDefault();
+>>>>>>> Stashed changes
     setError("");
   };
 
+<<<<<<< Updated upstream
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+=======
+    if (activeTab === "register" && password !== confirmPassword) {
+      return toast.error("Mật khẩu xác nhận không khớp Huy ơi!");
+    }
+
+    if (activeTab === "register" && regRole === "admin") {
+      if (regAdminKey !== "HUY_ADMIN_2026") {
+        return toast.error("Mã bí mật Admin không chính xác!");
+      }
+    }
+
+>>>>>>> Stashed changes
     setLoading(true);
     try {
       if (activeTab === "login") {
+<<<<<<< Updated upstream
         await login(email, password);
       } else {
         await register({ name, email, password });
+=======
+        // 1. Hứng lấy dữ liệu user trả về từ hàm login
+        const resUser = await login(email, password);
+
+        // 2. Dùng Template Literals (dấu ` `) để truyền tên vào
+        toast.success(`Chào mừng ${resUser.name} quay trở lại!`);
+      } else {
+        // 3. Tương tự cho phần Đăng ký
+        const resUser = await register({
+          name,
+          email,
+          password,
+          role: regRole,
+          adminKey: regAdminKey,
+        });
+
+        toast.success(`Chúc mừng ${resUser.name} đã đăng ký thành công!`);
+>>>>>>> Stashed changes
       }
       setIsPanelOpen(false);
     } catch (err) {
+<<<<<<< Updated upstream
       setError(err.message || "Có lỗi xảy ra");
+=======
+      setError(err.message);
+      toast.error(err.message);
+>>>>>>> Stashed changes
     } finally {
       setLoading(false);
     }

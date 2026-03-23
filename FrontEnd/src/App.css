@@ -917,3 +917,109 @@
 .brand span {
   color: #38bdf8; /* Màu xanh neon bạn đang dùng cho theme */
 }
+/* MovieCard.css */
+
+.movie-card {
+  position: relative;
+  background: #1e293b;
+  border-radius: 12px;
+  overflow: hidden;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.movie-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
+  border-color: #3b82f6;
+}
+
+.movie-card img {
+  width: 100%;
+  aspect-ratio: 2/3;
+  object-fit: cover;
+  display: block;
+}
+
+/* Nút Yêu thích (Tim) */
+.movie-fav-btn {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 10;
+  background: rgba(15, 23, 42, 0.7);
+  border: none;
+  color: #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.movie-fav-btn:hover {
+  background: rgba(15, 23, 42, 0.9);
+  transform: scale(1.1);
+}
+
+.movie-fav-btn-active {
+  color: #ef4444; /* Màu đỏ khi đã thích */
+}
+
+/* Nút Xóa (Thùng rác - Chỉ hiện khi hover) */
+.delete-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  background: rgba(239, 68, 68, 0.9);
+  color: white;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0; /* Mặc định ẩn */
+  transform: translateX(10px);
+  transition: 0.3s;
+}
+
+.movie-card:hover .delete-btn {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.delete-btn:hover {
+  background: #dc2626;
+  transform: scale(1.1) !important;
+}
+
+/* Thông tin phim bên dưới */
+.movie-meta {
+  padding: 12px;
+}
+
+.movie-meta h3 {
+  font-size: 0.95rem;
+  margin: 0 0 4px 0;
+  color: #f8fafc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.movie-meta p {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin: 0;
+}

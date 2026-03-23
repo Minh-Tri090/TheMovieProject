@@ -195,3 +195,7 @@ export async function addCustomMovie(movieData) {
     throw new Error(error.response?.data?.message || "Không thể thêm phim");
   }
 }
+// Hàm xóa phim
+export const deleteMovie = async (id) => {
+  return await backendApi.delete(`/movies/${id}`);
+};
