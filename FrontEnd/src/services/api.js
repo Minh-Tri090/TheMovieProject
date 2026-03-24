@@ -76,20 +76,31 @@ function normalizeMovie(m) {
 // ==========================================
 
 // Lấy danh sách phim trang chủ (Gộp cả Phim của Huy + TMDB)
-export async function getMovies() {
+// src/services/api.js
+
+export async function getMovies(isKidsMode = false) {
   try {
+    // 1. Cấu hình Params cho TMDB
+    const tmdbParams = isKidsMode
+      ? { with_genres: "16,10751" } // Chỉ lấy Hoạt hình & Gia đình
+      : {};
+
     const [tmdbRes, backendRes] = await Promise.all([
-      tmdbApi.get("/movie/popular"),
+      tmdbApi.get("/movie/popular", { params: tmdbParams }),
       backendApi.get("/movies"),
     ]);
 
-    const tmdbMovies = (tmdbRes.data.results || []).map(normalizeMovie);
-    const customMovies = (backendRes.data || []).map(normalizeMovie);
+    let tmdbMovies = (tmdbRes.data.results || []).map(normalizeMovie);
+    let customMovies = (backendRes.data || []).map(normalizeMovie);
 
-    // Trả về phim của Huy lên đầu danh sách
+    // 2. Lọc phim của Huy nếu đang ở chế độ Trẻ em
+    if (isKidsMode) {
+      customMovies = customMovies.filter((m) => m.isKidsFriendly === true);
+    }
+
     return [...customMovies, ...tmdbMovies];
   } catch (error) {
-    console.error("Lỗi lấy phim tổng hợp:", error);
+    console.error("Lỗi lấy phim:", error);
     return [];
   }
 }
@@ -200,6 +211,10 @@ export const getFavorites = async () => {
   return await backendApi.get("/users/favorites");
 };
 
-export const toggleFavoriteApi = async (movieId) => {
-  return await backendApi.post(`/users/favorite/${movieId}`);
+// src/services/api.js
+
+// Sửa lại để nhận thêm tham số movieData
+export const toggleFavoriteApi = async (movieId, movieData) => {
+  // Gửi movieData vào phần body của request POST
+  return await backendApi.post(`/users/favorite/${movieId}`, movieData);
 };

@@ -31,6 +31,8 @@ export const FavoriteProvider = ({ children }) => {
   }, [user]);
 
   // 2. Hàm Toggle (Thêm/Xóa)
+  // 2. Hàm Toggle (Thêm/Xóa) - Bản đã tối ưu cho Huy
+  // 2. Hàm Toggle (Thêm/Xóa) - Bản đã tối ưu cho Huy
   const toggleFavorite = async (movie) => {
     if (!user) {
       return toast.error("Huy ơi, đăng nhập để lưu phim yêu thích nhé!");
@@ -38,10 +40,12 @@ export const FavoriteProvider = ({ children }) => {
 
     try {
       const movieId = movie._id || movie.id;
-      // Gọi API lên Backend
-      await toggleFavoriteApi(movieId);
 
-      // Cập nhật State tại chỗ (Optimistic UI) để giao diện mượt mà
+      // CHỈ CẦN DÒNG NÀY: Truyền cả ID và Object phim vào hàm API
+      // Chúng ta sẽ cập nhật hàm này ở file api.js sau
+      await toggleFavoriteApi(movieId, movie);
+
+      // Cập nhật State tại chỗ (Optimistic UI)
       setFavorites((prev) => {
         const isExist = prev.find((m) => (m._id || m.id) === movieId);
         if (isExist) {
@@ -53,6 +57,7 @@ export const FavoriteProvider = ({ children }) => {
         }
       });
     } catch (error) {
+      console.error("Lỗi favorite:", error);
       toast.error("Không thể cập nhật danh sách yêu thích!");
     }
   };

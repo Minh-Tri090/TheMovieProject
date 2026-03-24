@@ -940,3 +940,75 @@
   margin-bottom: 30px;
   text-align: left;
 }
+/* Container bên ngoài */
+.kids-toggle-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 12px;
+  background: rgba(30, 41, 59, 0.6); /* Màu Slate-800 mờ */
+  border-radius: 20px;
+  border: 1px solid rgba(71, 85, 105, 0.5);
+  margin-left: 15px;
+  transition: all 0.3s ease;
+}
+
+/* Chữ nhãn (Kids ON/OFF) */
+.kids-toggle-label {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #94a3b8; /* Màu xám nhạt */
+  transition: color 0.3s ease;
+}
+
+.kids-toggle-label.active {
+  color: #4ade80; /* Màu xanh lá khi bật */
+  text-shadow: 0 0 8px rgba(74, 222, 128, 0.4);
+}
+
+/* Nền của nút gạt */
+.kids-toggle-btn {
+  position: relative;
+  width: 38px;
+  height: 20px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  padding: 0;
+}
+
+.kids-toggle-btn.off {
+  background-color: #475569; /* Xám đậm */
+}
+
+.kids-toggle-btn.on {
+  background-color: #22c55e; /* Xanh lá tươi */
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
+}
+
+/* Viên bi chạy bên trong */
+.kids-toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Khi bật thì viên bi trượt sang phải */
+.kids-toggle-btn.on .kids-toggle-thumb {
+  transform: translateX(18px);
+}
+
+/* Hiệu ứng hover cho đẹp */
+.kids-toggle-wrapper:hover {
+  background: rgba(30, 41, 59, 0.9);
+  border-color: #3b82f6; /* Đổi viền sang xanh dương khi hover */
+}

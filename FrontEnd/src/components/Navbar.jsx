@@ -12,9 +12,11 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { getTrendingPeople, addCustomMovie } from "../services/api";
 import { toast } from "../utils/toast";
+import { useKidsMode } from "../context/KidsModeContext";
 
 export default function Navbar() {
   const { user, login, register, logout } = useAuth();
+  const { isKidsMode, toggleKidsMode } = useKidsMode();
   const navigate = useNavigate();
 
   // --- REFS ---
@@ -240,6 +242,20 @@ export default function Navbar() {
             </button>
           )}
         </nav>
+        {/* --- NÚT GẠT CHẾ ĐỘ TRẺ EM --- */}
+        <div className="kids-toggle-wrapper">
+          <span className={`kids-toggle-label ${isKidsMode ? "active" : ""}`}>
+            {isKidsMode ? "Kids ON" : "Kids OFF"}
+          </span>
+          <button
+            type="button"
+            onClick={toggleKidsMode}
+            className={`kids-toggle-btn ${isKidsMode ? "on" : "off"}`}
+            title="Chế độ trẻ em"
+          >
+            <div className="kids-toggle-thumb" />
+          </button>
+        </div>
 
         {/* 4. User Area (Dropdown) */}
         <div className="header-member" ref={userMenuRef}>
