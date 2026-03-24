@@ -1,0 +1,10 @@
+/* MovieCard.css */
+.delete-btn {
+  /* ... code vị trí ... */
+  opacity: 0; /* Mặc định giấu đi */
+  transition: 0.3s;
+}
+
+.movie-card:hover .delete-btn {
+  opacity: 1; /* Di chuột vào thẻ phim thì nút xóa màu đỏ mới hiện ra */
+}

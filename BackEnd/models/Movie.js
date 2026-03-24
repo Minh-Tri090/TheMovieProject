@@ -8,6 +8,7 @@ const MovieSchema = new mongoose.Schema({
   backdrop: { type: String }, // PHẢI CÓ DÒNG NÀY THÌ COMPASS MỚI HIỆN
   overview: { type: String },
   createdAt: { type: Date, default: Date.now },
+  tmdbId: { type: String },
 });
 
 module.exports = mongoose.model("Movie", MovieSchema);

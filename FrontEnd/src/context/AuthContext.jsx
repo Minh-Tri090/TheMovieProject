@@ -38,14 +38,12 @@ export function AuthProvider({ children }) {
 
   // Hàm đăng ký (Đã chuyển sang gọi API thật)
   // Tại AuthContext.jsx
+  // TRONG FILE AuthContext.jsx - Kiểm tra xem có giống thế này không:
   const register = async (userData) => {
-    // Nhận nguyên cục data
+    // userData ở đây chính là nguyên cục {name, email, role, adminKey...}
     try {
-      const response = await backendApi.post("/auth/register", userData); // Gửi nguyên cục data lên
-      const { token, user: savedUser } = response.data;
-      // ... các bước lưu localStorage giữ nguyên ...
-      setUser(savedUser);
-      return savedUser;
+      const response = await backendApi.post("/auth/register", userData);
+      // ... các bước xử lý sau đó ...
     } catch (error) {
       throw new Error(error.response?.data?.message || "Đăng ký thất bại");
     }

@@ -12,9 +12,11 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { getTrendingPeople, addCustomMovie } from "../services/api";
 import { toast } from "../utils/toast";
+import { useKidsMode } from "../context/KidsModeContext";
 
 export default function Navbar() {
   const { user, login, register, logout } = useAuth();
+  const { isKidsMode, toggleKidsMode } = useKidsMode();
   const navigate = useNavigate();
 
   // --- REFS ---
@@ -47,6 +49,7 @@ export default function Navbar() {
     poster: "",
     backdrop: "",
     overview: "",
+    actors: "",
   });
   const [regRole, setRegRole] = useState("user");
   const [regAdminKey, setRegAdminKey] = useState("");
@@ -93,21 +96,14 @@ export default function Navbar() {
 
   const handleAuthSubmit = async (e) => {
     e.preventDefault();
-
     setError("");
-
-    // 1. Kiểm tra mật khẩu khớp nhau
 
     if (activeTab === "register" && password !== confirmPassword) {
       return toast.error("Mật khẩu xác nhận không khớp Huy ơi!");
     }
 
-    // 2. Kiểm tra mã Admin nếu đăng ký Admin
-
     if (activeTab === "register" && regRole === "admin") {
       if (regAdminKey !== "HUY_ADMIN_2026") {
-        // Đây là mã bí mật của bạn
-
         return toast.error("Mã bí mật Admin không chính xác!");
       }
     }
@@ -116,26 +112,27 @@ export default function Navbar() {
 
     try {
       if (activeTab === "login") {
-        await login(email, password);
+        // 1. Hứng lấy dữ liệu user trả về từ hàm login
+        const resUser = await login(email, password);
 
-        toast.success("Chào mừng Huy quay trở lại!");
-        // Tại Navbar.jsx
+        // 2. Dùng Template Literals (dấu ` `) để truyền tên vào
+        toast.success(`Chào mừng ${resUser.name} quay trở lại!`);
       } else {
-        // Huy phải gửi CẢ role và adminKey thì Backend mới check được
-        await register({
+        // 3. Tương tự cho phần Đăng ký
+        const resUser = await register({
           name,
           email,
           password,
           role: regRole,
-          adminKey: regAdminKey, // THÊM DÒNG NÀY VÀO ĐÂY
+          adminKey: regAdminKey,
         });
-        toast.success("Đăng ký tài khoản thành công!");
+
+        toast.success(`Chúc mừng ${resUser.name} đã đăng ký thành công!`);
       }
 
       setIsPanelOpen(false);
     } catch (err) {
       setError(err.message);
-
       toast.error(err.message);
     } finally {
       setLoading(false);
@@ -149,6 +146,7 @@ export default function Navbar() {
       const finalData = {
         ...movieData,
         rating: movieData.rating ? parseFloat(movieData.rating) : 0,
+        actors: movieData.actors.split(",").map((item) => item.trim()),
       };
       await addCustomMovie(finalData);
       toast.success("Thêm phim thành công!");
@@ -159,6 +157,7 @@ export default function Navbar() {
         poster: "",
         backdrop: "",
         overview: "",
+        actors: "",
       });
       setIsAddMovieOpen(false);
       window.location.reload();
@@ -246,6 +245,20 @@ export default function Navbar() {
             </button>
           )}
         </nav>
+        {/* --- NÚT GẠT CHẾ ĐỘ TRẺ EM --- */}
+        <div className="kids-toggle-wrapper">
+          <span className={`kids-toggle-label ${isKidsMode ? "active" : ""}`}>
+            {isKidsMode ? "Kids ON" : "Kids OFF"}
+          </span>
+          <button
+            type="button"
+            onClick={toggleKidsMode}
+            className={`kids-toggle-btn ${isKidsMode ? "on" : "off"}`}
+            title="Chế độ trẻ em"
+          >
+            <div className="kids-toggle-thumb" />
+          </button>
+        </div>
 
         {/* 4. User Area (Dropdown) */}
         <div className="header-member" ref={userMenuRef}>
@@ -369,7 +382,7 @@ export default function Navbar() {
                           type="password"
                           placeholder="Nhập mã xác minh"
                           value={regAdminKey} // Thêm dòng này
-                          onChange={(e) => setRegAdminKey(e.target.value)}
+                          onChange={(e) => setRegAdminKey(e.target.value)} // Sửa thành setRegAdminKey
                         />
                       </label>
                     )}
@@ -485,6 +498,14 @@ export default function Navbar() {
                     setMovieData({ ...movieData, backdrop: e.target.value })
                   }
                   required
+                />
+                <input
+                  className="input mb-2 border-green-500" // Mình để border màu khác cho Huy dễ nhận diện
+                  placeholder="Diễn viên (Cách nhau bằng dấu phẩy, VD: Gong Yoo, IU)"
+                  value={movieData.actors}
+                  onChange={(e) =>
+                    setMovieData({ ...movieData, actors: e.target.value })
+                  }
                 />
                 <textarea
                   className="input mb-2"
