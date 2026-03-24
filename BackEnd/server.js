@@ -6,10 +6,8 @@ require("dotenv").config();
 const app = express();
 const authRoutes = require("./routes/auth");
 
-const movieRoutes = require("./routes/movie"); // Dòng 1
-const historyRoutes = require("./routes/history"); // Thêm lịch sử xem
-
 const movieRoutes = require("./routes/movie");
+const historyRoutes = require("./routes/history"); // Thêm lịch sử xem
 const userRoutes = require("./routes/user");
 
 

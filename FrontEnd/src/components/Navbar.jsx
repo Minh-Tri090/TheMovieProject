@@ -10,7 +10,7 @@ import {
   FiHeart,
 } from "react-icons/fi";
 import { useAuth } from "../context/AuthContext";
-import { getTrendingPeople, addCustomMovie } from "../services/api";
+import { getTrendingPeople } from "../services/api";
 import { toast } from "../utils/toast";
 import { useKidsMode } from "../context/KidsModeContext";
 
@@ -22,6 +22,7 @@ export default function Navbar() {
   // --- REFS ---
   const userMenuRef = useRef(null);
   const searchRef = useRef(null);
+  const menuRef = useRef(null);
 
   // --- STATES GIAO DIỆN ---
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -38,19 +39,9 @@ export default function Navbar() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // --- STATES DỮ LIỆU & THÊM PHIM ---
+  // --- STATES DỮ LIỆU ---
   const [actors, setActors] = useState([]);
   const [loadingActors, setLoadingActors] = useState(false);
-  const [isAddMovieOpen, setIsAddMovieOpen] = useState(false);
-  const [movieData, setMovieData] = useState({
-    title: "",
-    year: "",
-    rating: "",
-    poster: "",
-    backdrop: "",
-    overview: "",
-    actors: "",
-  });
   const [regRole, setRegRole] = useState("user");
   const [regAdminKey, setRegAdminKey] = useState("");
 
@@ -66,6 +57,17 @@ export default function Navbar() {
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // --- EFFECT: Đóng menu mega khi bấm bên ngoài ---
+  useEffect(() => {
+    const handleClickOutsideMenu = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setOpenMenu(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutsideMenu);
+    return () => document.removeEventListener("mousedown", handleClickOutsideMenu);
   }, []);
 
   // --- EFFECT: Lấy dữ liệu diễn viên ---
@@ -85,6 +87,52 @@ export default function Navbar() {
   // --- HANDLERS ---
   const toggleMenu = (menu) => setOpenMenu(openMenu === menu ? null : menu);
   const closeMenu = () => setOpenMenu(null);
+
+  const topicItems = [
+    "Chính kịch",
+    "Viễn tưởng",
+    "Khoa học",
+    "Tình cảm",
+    "Thể thao",
+    "Kinh điển",
+    "Trẻ em",
+    "Hành động",
+    "Hài hước",
+    "Hình sự",
+    "Cổ trang",
+    "Chiến tranh",
+    "Bí ẩn",
+    "Kinh dị",
+    "Phiêu lưu",
+    "Short Drama",
+    "Âm nhạc",
+    "Học đường",
+    "Gia đình",
+    "Tâm lý",
+    "Thần thoại",
+    "Lịch sử",
+    "Phim 18+",
+    "Phim ngắn",
+  ];
+  const genreItems = [
+    "Hành động",
+    "Hoạt hình",
+    "Hài",
+    "Kinh dị",
+    "Lãng mạn",
+    "Viễn tưởng",
+    "Tâm lý",
+    "Thể thao",
+  ];
+  const countryItems = [
+    "Âu Mỹ",
+    "Hàn Quốc",
+    "Trung Quốc",
+    "Việt Nam",
+    "Thái Lan",
+    "Nhật Bản",
+    "Ấn Độ",
+  ];
 
   const handleLogout = () => {
     logout();
@@ -139,37 +187,9 @@ export default function Navbar() {
     }
   };
 
-  const handleAddMovieSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      setLoading(true);
-      const finalData = {
-        ...movieData,
-        rating: movieData.rating ? parseFloat(movieData.rating) : 0,
-        actors: movieData.actors.split(",").map((item) => item.trim()),
-      };
-      await addCustomMovie(finalData);
-      toast.success("Thêm phim thành công!");
-      setMovieData({
-        title: "",
-        year: "",
-        rating: "",
-        poster: "",
-        backdrop: "",
-        overview: "",
-        actors: "",
-      });
-      setIsAddMovieOpen(false);
-      window.location.reload();
-    } catch (err) {
-      alert(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
-    <header className="site-header" onMouseLeave={closeMenu}>
+    <header className="site-header" ref={menuRef}>
       <div className="container site-header-inner header-layout">
         {/* 1. Logo */}
         <div
@@ -239,7 +259,7 @@ export default function Navbar() {
             <button
               type="button"
               className="header-menu-item text-sky-400 font-bold"
-              onClick={() => setIsAddMovieOpen(true)}
+              onClick={() => navigate("/add-movie")}
             >
               <FiPlus className="inline mr-1" /> Thêm phim
             </button>
@@ -444,131 +464,33 @@ export default function Navbar() {
             </div>
           )}
 
-          {/* Form Thêm Phim (Modal) */}
-          {user && isAddMovieOpen && (
-            <div className="auth-panel add-movie-panel">
-              <h3 className="p-3 text-center border-b border-slate-700 font-bold">
-                Thêm Phim Mới
-              </h3>
-              <form
-                onSubmit={handleAddMovieSubmit}
-                className="form auth-form p-3"
-              >
-                <input
-                  className="input mb-2"
-                  placeholder="Tiêu đề phim"
-                  value={movieData.title}
-                  onChange={(e) =>
-                    setMovieData({ ...movieData, title: e.target.value })
-                  }
-                  required
-                />
-                <div className="flex gap-2 mb-2">
-                  <input
-                    className="input flex-1"
-                    placeholder="Năm"
-                    value={movieData.year}
-                    onChange={(e) =>
-                      setMovieData({ ...movieData, year: e.target.value })
-                    }
-                  />
-                  <input
-                    className="input flex-1"
-                    placeholder="Điểm"
-                    value={movieData.rating}
-                    onChange={(e) =>
-                      setMovieData({ ...movieData, rating: e.target.value })
-                    }
-                  />
-                </div>
-                <input
-                  className="input mb-2"
-                  placeholder="Link Poster (Dọc)"
-                  value={movieData.poster}
-                  onChange={(e) =>
-                    setMovieData({ ...movieData, poster: e.target.value })
-                  }
-                  required
-                />
-                <input
-                  className="input mb-2 border-sky-500"
-                  placeholder="Link Backdrop (Ngang)"
-                  value={movieData.backdrop}
-                  onChange={(e) =>
-                    setMovieData({ ...movieData, backdrop: e.target.value })
-                  }
-                  required
-                />
-                <input
-                  className="input mb-2 border-green-500" // Mình để border màu khác cho Huy dễ nhận diện
-                  placeholder="Diễn viên (Cách nhau bằng dấu phẩy, VD: Gong Yoo, IU)"
-                  value={movieData.actors}
-                  onChange={(e) =>
-                    setMovieData({ ...movieData, actors: e.target.value })
-                  }
-                />
-                <textarea
-                  className="input mb-2"
-                  placeholder="Mô tả tóm tắt..."
-                  value={movieData.overview}
-                  onChange={(e) =>
-                    setMovieData({ ...movieData, overview: e.target.value })
-                  }
-                  rows={3}
-                />
-                <button
-                  type="submit"
-                  className="bg-sky-600 w-full font-bold"
-                  disabled={loading}
-                >
-                  Xác nhận lưu
-                </button>
-              </form>
-            </div>
-          )}
         </div>
       </div>
 
-      {/* --- MEGA MENUS (Topic, Genre, Country, Actor) --- */}
-      {openMenu === "topic" && (
-        <div className="topic-strip">
-          <div className="topic-strip-inner">
-            {[
-              "Viễn Tưởng",
-              "Thái Lan",
-              "Sitcom",
-              "Chiếu Rạp",
-              "Kinh Dị",
-              "Cổ Trang",
-              "4K",
-              "Chiến Tranh",
-            ].map((t) => (
-              <div key={t} className="topic-card">
-                <div className="topic-card-title">{t}</div>
-              </div>
-            ))}
+      {/* --- MENU Định hướng (Topic, Genre, Country) --- */}
+      {(openMenu === "topic" || openMenu === "genre" || openMenu === "country") && (
+        <div className="menu-grid-panel">
+          <div className="menu-grid-header">
+            <h3 className="menu-grid-title">
+              {openMenu === "topic"
+                ? "Chủ đề"
+                : openMenu === "genre"
+                ? "Thể loại"
+                : "Quốc gia"}
+            </h3>
           </div>
-        </div>
-      )}
-
-      {(openMenu === "genre" || openMenu === "country") && (
-        <div className="mega-menu">
-          <div className="container mega-menu-inner">
-            {(openMenu === "genre"
-              ? [
-                  "Hành động",
-                  "Hoạt hình",
-                  "Hài",
-                  "Kinh dị",
-                  "Lãng mạn",
-                  "Viễn tưởng",
-                ]
-              : ["Âu Mỹ", "Hàn Quốc", "Trung Quốc", "Việt Nam", "Thái Lan"]
+          <div className="menu-grid-inner">
+            {(
+              openMenu === "genre"
+                ? genreItems
+                : openMenu === "country"
+                ? countryItems
+                : topicItems
             ).map((item) => (
               <Link
                 key={item}
-                to={`/${openMenu}/${item}`}
-                className="mega-menu-item"
+                to={`/${openMenu}/${encodeURIComponent(item)}`}
+                className="menu-grid-item"
                 onClick={closeMenu}
               >
                 {item}
@@ -576,6 +498,10 @@ export default function Navbar() {
             ))}
           </div>
         </div>
+      )}
+
+      {openMenu && (
+        <button className="menu-scrim" onClick={closeMenu} aria-label="Đóng menu" />
       )}
 
       {openMenu === "actor" && (
