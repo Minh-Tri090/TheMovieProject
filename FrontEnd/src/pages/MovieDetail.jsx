@@ -1,15 +1,8 @@
-
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { getMovieById, recordMovieView } from '../services/api';
-import { useAuth } from '../context/AuthContext';
-import { useFavorites } from '../context/FavoriteContext';
-
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom"; // Thêm Link vào đây
-import { getMovieById } from "../services/api";
+import { useParams, Link } from "react-router-dom";
+import { getMovieById, recordMovieView } from "../services/api";
+import { useAuth } from "../context/AuthContext";
 import { useFavorites } from "../context/FavoriteContext";
-
 
 export default function MovieDetail() {
   const { id } = useParams();
@@ -18,42 +11,46 @@ export default function MovieDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showTrailer, setShowTrailer] = useState(false);
+
+  // Tránh lỗi nếu FavoriteContext chưa sẵn sàng
   const { toggleFavorite, isFavorite } = useFavorites() || {};
 
   useEffect(() => {
     let mounted = true;
-    getMovieById(id)
-      .then((m) => {
+
+    const fetchMovieData = async () => {
+      try {
+        setLoading(true);
+        const data = await getMovieById(id);
+
         if (!mounted) return;
-        setMovie(m);
 
-        console.log('Movie detail payload:', m);
-        console.log('Movie trailer field:', m.trailer);
-        
-        // Ghi lại lịch sử xem khi người dùng đã đăng nhập
-        if (user && user.id) {
-          recordMovieView(id, m.title, 0);
+        if (data) {
+          setMovie(data);
+
+          // --- LOGIC GHI LỊCH SỬ XEM ---
+          // Chỉ ghi khi phim load thành công và có User đang đăng nhập
+          if (user && user.id) {
+            recordMovieView(id, data.title, 0);
+          }
+        } else {
+          setError("Không tìm thấy thông tin phim.");
         }
-        
-
-
-        setLoading(false);
-      })
-      .catch((err) => {
+      } catch (err) {
         if (!mounted) return;
         console.error("Lỗi lấy chi tiết phim:", err);
         setError("Không tìm thấy phim này Huy ơi!");
-        setLoading(false);
-      });
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
 
-    return () => { mounted = false; };
-  }, [id, user]);
+    fetchMovieData();
 
     return () => {
       mounted = false;
     };
-  }, [id]);
-
+  }, [id, user]); // Chạy lại khi đổi phim hoặc khi user đăng nhập/đăng xuất
 
   if (loading)
     return (
@@ -67,10 +64,8 @@ export default function MovieDetail() {
     );
   if (!movie) return null;
 
-  // Kiểm tra xem phim đã trong danh sách yêu thích chưa
-  const favorite = isFavorite ? isFavorite(movie.id) : false;
-
-  // Lấy key trailer (Xử lý cả dạng object cũ hoặc string mới từ api.js)
+  // Logic kiểm tra trạng thái yêu thích và trailer
+  const favorite = isFavorite ? isFavorite(movie._id || movie.id) : false;
   const trailerKey = movie.trailer?.key || movie.trailer;
 
   return (
@@ -161,13 +156,12 @@ export default function MovieDetail() {
             </div>
           </div>
 
-          {/* 4. Phần Diễn viên (Đã cập nhật Link) */}
+          {/* 4. Phần Diễn viên */}
           {movie.cast && movie.cast.length > 0 && (
             <div className="page-section mt-10">
               <h2 className="detail-section-title">Diễn viên chính</h2>
               <div className="detail-cast-grid">
                 {movie.cast.map((c, index) => (
-                  // CHỖ THAY ĐỔI: Wrap trong Link để nhấn vào được
                   <Link
                     to={`/actor/${encodeURIComponent(c.name)}`}
                     key={c.id || index}
