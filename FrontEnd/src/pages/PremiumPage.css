@@ -1,0 +1,185 @@
+/* PremiumPage.css */
+
+.premium-page-container {
+  background: radial-gradient(circle at top left, rgba(148, 163, 184, 0.14), rgba(15, 23, 42, 0.95));
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.8), 0 0 0 1px rgba(15, 23, 42, 1);
+  border-radius: 20px;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px;
+  color: #e5e7eb;
+}
+
+.premium-title {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 30px;
+  color: #fff;
+  text-align: center;
+}
+
+.premium-plans {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+.plan-card {
+  background: rgba(15, 23, 42, 0.6);
+  border: 2px solid rgba(148, 163, 184, 0.2);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.plan-card:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.plan-card-selected {
+  border-color: #f1f5f9;
+  transform: translateY(-8px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+}
+
+.plan-card-premium {
+  border: 2px solid #e11d48;
+  transform: translateY(-8px);
+}
+
+.plan-card-premium:hover {
+  border-color: #f43f5e;
+}
+
+.premium-badge {
+  background: #e11d48;
+  color: #fff;
+  text-align: center;
+  font-size: 11px;
+  font-weight: bold;
+  padding: 6px 0;
+  text-transform: uppercase;
+}
+
+.plan-header {
+  padding: 24px;
+  color: #fff;
+  position: relative;
+}
+
+.plan-header h3 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.plan-header p {
+  margin: 4px 0 0 0;
+  font-size: 14px;
+  opacity: 0.9;
+  font-weight: 600;
+}
+
+.premium-check {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: #fff;
+  color: #e11d48;
+  border-radius: 50%;
+  padding: 4px;
+  font-size: 20px;
+}
+
+/* Gradients for headers, inspired by screenshot */
+.bg-mobile {
+  background: linear-gradient(135deg, #3b82f6, #1e3a8a);
+}
+.bg-basic {
+  background: linear-gradient(135deg, #a855f7, #581c87);
+}
+.bg-standard {
+  background: linear-gradient(135deg, #3b82f6, #ec4899);
+}
+.bg-premium {
+  background: linear-gradient(135deg, #1e3a8a, #e11d48);
+}
+
+.plan-body {
+  padding: 20px;
+  flex: 1;
+}
+
+.plan-feature {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.plan-feature .feature-label {
+  font-size: 13px;
+  color: #9ca3af;
+  line-height: 1.4;
+}
+
+.plan-feature .feature-value {
+  font-size: 15px;
+  color: #f1f5f9;
+}
+
+.plan-feature .text-bold {
+  font-weight: 600;
+}
+
+.plan-body hr {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin: 14px 0;
+}
+
+.premium-footer {
+  font-size: 12px;
+  color: #9ca3af;
+  line-height: 1.6;
+}
+
+.premium-footer p {
+  margin-bottom: 12px;
+}
+
+.premium-next-btn {
+  background: #e50914; /* Netflix red */
+  color: #fff;
+  border: none;
+  padding: 16px 0;
+  width: 100%;
+  max-width: 400px;
+  margin: 20px auto 0;
+  display: block;
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.premium-next-btn:hover {
+  background: #f40612;
+}
+
+@media (max-width: 800px) {
+  .premium-plans {
+    grid-template-columns: 1fr;
+  }
+  .plan-card-premium {
+    transform: none;
+  }
+}

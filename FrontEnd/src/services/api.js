@@ -4,7 +4,7 @@ import axios from "axios";
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 const BASE_URL = "https://api.themoviedb.org/3";
 const IMAGE_BASE = "https://image.tmdb.org/t/p/w500";
-const BACKDROP_BASE = "https://image.tmdb.org/t/p/w1280";
+const BACKDROP_BASE = "https://image.tmdb.org/t/p/original";
 const FAVORITES_KEY = "themovie_favorites";
 const CUSTOM_MOVIES_KEY = "themovie_custom_movies";
 
@@ -121,6 +121,29 @@ export async function getMovies() {
   }
 }
 
+const GENRE_MAP = {
+  "Hành Động": 28, "Phiêu Lưu": 12, "Hoạt Hình": 16, "Hài": 35,
+  "Hình Sự": 80, "Tài Liệu": 99, "Chính Kịch": 18, "Gia Đình": 10751,
+  "Kỳ Ảo": 14, "Lịch Sử": 36, "Kinh Dị": 27, "Âm Nhạc": 10402,
+  "Bí Ẩn": 9648, "Lãng Mạn": 10749, "Khoa Học Viễn Tưởng": 878,
+  "Phim Truyền Hình": 10770, "Gây Cấn": 53, "Chiến Tranh": 10752, "Miền Tây": 37
+};
+
+export async function getMoviesByGenre(genreName) {
+  const genreId = GENRE_MAP[genreName];
+  if (!genreId) return searchMovies(genreName);
+  const res = await client.get("/discover/movie", { params: { with_genres: genreId } });
+  return (res.data.results || []).map(normalizeMovie);
+}
+
+export async function getMoviesByCountry(countryName) {
+  // Simple mapping for demo, usually needs region codes
+  const countryParam = countryName === "Âu Mỹ" ? "US" : (countryName === "Trung Quốc" ? "CN" : "");
+  const params = countryParam ? { with_origin_country: countryParam } : { query: countryName };
+  const res = await client.get(countryParam ? "/discover/movie" : "/search/movie", { params });
+  return (res.data.results || []).map(normalizeMovie);
+}
+
 export async function searchMovies(query) {
   if (!query) return getMovies();
   const res = await client.get("/search/movie", { params: { query } });
@@ -172,6 +195,40 @@ export async function getTrendingPeople() {
     name: p.name,
     avatar: p.profile_path ? `${IMAGE_BASE}${p.profile_path}` : PLACEHOLDER,
   }));
+}
+
+export async function getTrendingMovies() {
+  const res = await client.get("/trending/movie/day");
+  return (res.data.results || []).slice(0, 10).map((m) => ({
+    ...normalizeMovie(m),
+    backdrop: m.backdrop_path ? `${BACKDROP_BASE}${m.backdrop_path}` : null,
+    mediaType: m.media_type || "movie",
+  }));
+}
+
+// Lấy danh sách phim kèm thumbnail để hiển thị trailer cards
+export async function getTrailerMovies(type = "popular") {
+  const endpoint = type === "now_playing" ? "/movie/now_playing" : "/movie/popular";
+  const res = await client.get(endpoint);
+  return (res.data.results || []).slice(0, 12).map((m) => ({
+    id: m.id,
+    title: m.title || m.name || "Untitled",
+    year: m.release_date ? new Date(m.release_date).getFullYear() : "",
+    backdrop: m.backdrop_path ? `${BACKDROP_BASE}${m.backdrop_path}` : null,
+    poster: m.poster_path ? `${IMAGE_BASE}${m.poster_path}` : null,
+    rating: m.vote_average ? Number(m.vote_average.toFixed(1)) : null,
+  }));
+}
+
+// Lấy trailer YouTube key cho một phim cụ thể (gọi khi click)
+export async function getMovieTrailerKey(movieId) {
+  const res = await client.get(`/movie/${movieId}/videos`);
+  const vids = res.data.results || [];
+  const trailer =
+    vids.find((v) => v.site === "YouTube" && /trailer/i.test(v.type)) ||
+    vids.find((v) => v.site === "YouTube" && /teaser/i.test(v.type)) ||
+    vids.find((v) => v.site === "YouTube");
+  return trailer ? trailer.key : null;
 }
 
 export function getFavoriteMovies() {
