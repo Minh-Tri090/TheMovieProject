@@ -9,7 +9,6 @@ const authRoutes = require("./routes/auth");
 const movieRoutes = require("./routes/movie"); // Dòng 1
 const historyRoutes = require("./routes/history"); // Thêm lịch sử xem
 
-const movieRoutes = require("./routes/movie");
 const userRoutes = require("./routes/user");
 
 
