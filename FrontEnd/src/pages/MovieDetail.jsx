@@ -1,10 +1,19 @@
+
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { getMovieById, recordMovieView } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import { useFavorites } from '../context/FavoriteContext';
+
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom"; // Thêm Link vào đây
 import { getMovieById } from "../services/api";
 import { useFavorites } from "../context/FavoriteContext";
 
+
 export default function MovieDetail() {
   const { id } = useParams();
+  const { user } = useAuth();
   const [movie, setMovie] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -17,6 +26,17 @@ export default function MovieDetail() {
       .then((m) => {
         if (!mounted) return;
         setMovie(m);
+
+        console.log('Movie detail payload:', m);
+        console.log('Movie trailer field:', m.trailer);
+        
+        // Ghi lại lịch sử xem khi người dùng đã đăng nhập
+        if (user && user.id) {
+          recordMovieView(id, m.title, 0);
+        }
+        
+
+
         setLoading(false);
       })
       .catch((err) => {
@@ -25,10 +45,15 @@ export default function MovieDetail() {
         setError("Không tìm thấy phim này Huy ơi!");
         setLoading(false);
       });
+
+    return () => { mounted = false; };
+  }, [id, user]);
+
     return () => {
       mounted = false;
     };
   }, [id]);
+
 
   if (loading)
     return (

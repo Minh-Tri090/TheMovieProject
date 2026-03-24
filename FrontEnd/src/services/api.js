@@ -35,9 +35,17 @@ export const backendApi = axios.create({
 backendApi.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Thêm user-id vào headers để backend có thể xác định người dùng
+    if (user.id) {
+      config.headers["user-id"] = user.id;
+    }
+    
     return config;
   },
   (error) => Promise.reject(error),
@@ -194,6 +202,57 @@ export async function getTrendingPeople() {
   }
 }
 
+
+// --- QUẢN LÝ LỊCH SỬ XEM PHIM ---
+export async function recordMovieView(movieId, movieTitle, duration = 0) {
+  try {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    if (!user.id) {
+      console.warn("Người dùng chưa đăng nhập, không thể lưu lịch sử");
+      return;
+    }
+
+    const res = await backendApi.post("/history/add", {
+      movieId,
+      movieTitle,
+      duration,
+    });
+    return res.data;
+  } catch (error) {
+    console.error("Lỗi khi lưu lịch sử xem:", error);
+  }
+}
+
+export async function getUserHistory() {
+  try {
+    const res = await backendApi.get("/history/user");
+    return res.data;
+  } catch (error) {
+    console.error("Lỗi khi lấy lịch sử:", error);
+    return [];
+  }
+}
+
+export async function getAllHistory() {
+  try {
+    const res = await backendApi.get("/history/all");
+    return res.data;
+  } catch (error) {
+    console.error("Lỗi khi lấy lịch sử:", error);
+    return [];
+  }
+}
+
+export async function clearUserHistory() {
+  try {
+    const res = await backendApi.delete("/history/clear");
+    return res.data;
+  } catch (error) {
+    console.error("Lỗi khi xóa lịch sử:", error);
+  }
+}
+
+
 // ==========================================
 // 6. QUẢN LÝ USER & ADMIN (BACKEND)
 // ==========================================
@@ -218,3 +277,4 @@ export const toggleFavoriteApi = async (movieId, movieData) => {
   // Gửi movieData vào phần body của request POST
   return await backendApi.post(`/users/favorite/${movieId}`, movieData);
 };
+
