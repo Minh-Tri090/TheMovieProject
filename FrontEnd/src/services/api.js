@@ -203,3 +203,69 @@ export const deleteMovie = async (id) =>
 
 export const addCustomMovie = async (movieData) =>
   (await backendApi.post("/movies/add", movieData)).data;
+
+// Thêm hàm này vào cuối file api.js của Huy
+export async function getTrendingPeople() {
+  try {
+    const res = await tmdbApi.get("/trending/person/week");
+    return (res.data.results || []).map((p) => ({
+      id: p.id,
+      name: p.name,
+      avatar: p.profile_path
+        ? `https://image.tmdb.org/t/p/w500${p.profile_path}`
+        : "https://via.placeholder.com/300x450?text=No+Avatar",
+    }));
+  } catch (error) {
+    console.error("Lỗi lấy trending people:", error);
+    return [];
+  }
+}
+
+// Thêm hàm này vào cuối file api.js để sửa lỗi LatestTrailers
+export async function getMovieTrailerKey(movieId) {
+  try {
+    const res = await tmdbApi.get(`/movie/${movieId}/videos`);
+    const vids = res.data.results || [];
+
+    // Tìm video là Trailer trên YouTube
+    const trailer =
+      vids.find((v) => v.site === "YouTube" && /trailer/i.test(v.type)) ||
+      vids.find((v) => v.site === "YouTube" && /teaser/i.test(v.type)) ||
+      vids.find((v) => v.site === "YouTube");
+
+    return trailer ? trailer.key : null;
+  } catch (error) {
+    console.error("Lỗi lấy trailer key:", error);
+    return null;
+  }
+}
+
+// --- CHỨC NĂNG DIỄN VIÊN (Dành cho trang ActorMovies.jsx) ---
+
+// 1. Lấy phim từ TMDB theo diễn viên
+export async function getTmdbMoviesByActor(actorName) {
+  try {
+    const searchRes = await tmdbApi.get("/search/person", {
+      params: { query: actorName },
+    });
+    const personId = searchRes.data.results[0]?.id;
+    if (!personId) return [];
+
+    const creditsRes = await tmdbApi.get(`/person/${personId}/movie_credits`);
+    return (creditsRes.data.cast || []).slice(0, 20).map(normalizeMovie);
+  } catch (error) {
+    console.error("Lỗi lấy phim TMDB theo diễn viên:", error);
+    return [];
+  }
+}
+
+// 2. Lấy phim từ Backend của Huy theo diễn viên
+export async function getLocalMoviesByActor(actorName) {
+  try {
+    const res = await backendApi.get(`/movies/actor/${actorName}`);
+    return (res.data || []).map(normalizeMovie);
+  } catch (error) {
+    console.error("Lỗi lấy phim Local theo diễn viên:", error);
+    return [];
+  }
+}

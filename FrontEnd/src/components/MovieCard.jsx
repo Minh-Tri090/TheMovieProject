@@ -23,7 +23,10 @@ export default function MovieCard({ movie }) {
 
   // ID đồng nhất cho cả 2 nguồn (Huy)
   const movieId = movie._id || movie.id;
-  const favorite = isFavorite && movieId ? isFavorite(movieId) : false;
+  const favorite =
+    isFavorite && typeof isFavorite === "function" && movieId
+      ? isFavorite(movieId)
+      : false;
 
   const handleMouseEnter = () => {
     hoverTimer.current = setTimeout(() => {

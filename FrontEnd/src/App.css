@@ -1,7 +1,9 @@
-/* --- PHẦN 1: LAYOUT & CHUNG (GIỮ NGUYÊN) --- */
+/* ==========================================
+   PHẦN 1: LAYOUT & CHUNG (Hệ khung xương)
+   ========================================== */
 .hide-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
@@ -11,6 +13,8 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background-color: #0f172a; /* Màu đen tối chuẩn Netflix */
+  color: #f8fafc;
 }
 
 .app-shell-main {
@@ -22,7 +26,7 @@
 .site-header {
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 100; /* Tăng z-index để nằm trên các popover */
   backdrop-filter: blur(16px);
   background: linear-gradient(
     90deg,
@@ -43,7 +47,11 @@
 
 /* ... (Các class Header, Search, Menu khác giữ nguyên) ... */
 
-/* --- PHẦN 2: MOVIE CARD & GRID (NETFLIX STYLE) --- */
+/* ==========================================
+   PHẦN 2: MOVIE CARD & GRID (NETFLIX STYLE)
+   ========================================== */
+
+/* Base definitions for the grid and card */
 .movie-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -71,7 +79,144 @@
   border-color: rgba(250, 250, 250, 0.9);
 }
 
-/* --- PHẦN 3: ĐOẠN CODE MERGE TỪ HUY (KIDS MODE & FAVORITES) --- */
+/* --- PHẦN 2B: NETFLIX HOVER UI (ĐÃ SỬA VÀ THÊM LẠI) --- */
+
+/* Thêm Class container cho MovieCard để quản lý Hover */
+.movie-card-wrapper {
+  position: relative;
+  overflow: visible; /* Quan trọng để popover không bị cắt */
+  height: 100%;
+}
+
+/* Thêm Class popover rendered via createPortal */
+.movie-popover {
+  width: 300px; /* Tăng kích thước popover */
+  transform: translate(-50%, -50%); /* Căn giữa */
+  background-color: #141414; /* Màu đen Netflix chuẩn */
+  border-radius: 12px;
+  overflow: hidden;
+  z-index: 999999; /* Luôn nằm trên cùng */
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.9),
+    0 0 0 1px rgba(255, 255, 255, 0.1); /* Shadow sâu + viền tinh tế */
+  animation: popoverFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards; /* Entrance animation */
+}
+
+@keyframes popoverFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* Thêm Class cho ảnh nền trên popover */
+.popover-backdrop {
+  width: 100%;
+  height: 160px; /* Chiều cao ảnh backdrop */
+  object-fit: cover;
+  cursor: pointer;
+  display: block;
+}
+
+/* Thêm Class nội dung dưới ảnh */
+.popover-content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Thêm Class tiêu đề phim trên popover */
+.popover-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Thêm Class cho hàng nút Play/Fav/Info */
+.popover-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* General button in popover */
+.popover-actions button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: none;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+/* Small Play button */
+.btn-play-sm {
+  background-color: #e50914; /* Màu đỏ Netflix */
+  color: #fff;
+}
+.btn-play-sm:hover {
+  background-color: #f6121d;
+}
+
+/* Action buttons (favorite, info) */
+.btn-action-sm {
+  background-color: #2a2a2a; /* Màu xám tối */
+  color: #fff;
+}
+.btn-action-sm:hover {
+  background-color: #383838;
+}
+
+/* Tags row (ratings, year, badges) */
+.popover-tags {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 0.8rem;
+  color: #b3b3b3; /* Lighter text color */
+}
+
+/* General badge style */
+.p-badge {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  color: #fff;
+  display: inline-block;
+}
+
+/* IMDb rating badge */
+.p-badge.imdb {
+  border: 1px solid #f5c518; /* Viền vàng IMDb */
+  color: #f5c518;
+}
+
+/* Age rating badge */
+.p-badge.age {
+  background-color: #475569; /* Nền xám */
+}
+
+/* Plain text tags (year, updates) */
+.p-text {
+  /* Simple style inherited from popover-tags */
+}
+
+/* ==========================================
+   PHẦN 3: ĐOẠN CODE TỪ HUY (KIDS MODE & FAVORITES)
+   ========================================== */
 
 /* Lưới cho trang Yêu thích */
 .movies-grid {
@@ -141,8 +286,9 @@
   transform: translateX(18px);
 }
 
-/* --- PHẦN 4: ĐOẠN CODE MERGE TỪ TAI (NÚT PLAY CHI TIẾT) --- */
-
+/* ==========================================
+   PHẦN 4: ĐOẠN CODE TỪ TAI (NÚT PLAY CHI TIẾT)
+   ========================================== */
 .detail-play-btn {
   display: inline-flex;
   align-items: center;

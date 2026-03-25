@@ -64,7 +64,8 @@ export const FavoriteProvider = ({ children }) => {
 
   // 3. Hàm kiểm tra xem phim đã thích chưa
   const isFavorite = (movieId) => {
-    return favorites.some((m) => (m._id || m.id) === movieId);
+    // Thêm dấu "?? []" hoặc "|| []" để tránh lỗi undefined
+    return (favorites || []).some((m) => (m._id || m.id) === movieId);
   };
 
   return (
