@@ -50,9 +50,7 @@ export default function App() {
 
               <footer className="site-footer">
                 <div className="container">
-                  <span>
-                    © 2026 THEMOVIE - Đồ án của Nguyễn Hoàng Huy & Team
-                  </span>
+                  <span>© 2026 THEMOVIE</span>
                 </div>
               </footer>
             </div>
