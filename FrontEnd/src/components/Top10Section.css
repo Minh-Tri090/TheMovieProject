@@ -1,0 +1,188 @@
+/* ========================
+   TOP 10 SECTION
+======================== */
+.t10-section {
+  margin-top: 36px;
+}
+
+.t10-header {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 18px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.t10-source {
+  font-size: 0.72rem;
+  font-weight: 400;
+  color: #64748b;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(100, 116, 139, 0.4);
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+
+/* Wrapper holds arrows + carousel */
+.t10-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Horizontal scrolling rail */
+.t10-carousel {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  width: 100%;
+  padding: 4px 2px 24px;
+}
+.t10-carousel::-webkit-scrollbar { display: none; }
+
+/* Individual card */
+.t10-card {
+  flex: 0 0 142px;
+  width: 142px;
+  min-width: 142px;
+  max-width: 142px;
+  margin-top: 12px; /* Reserve space for hover lift without overflowing */
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s ease;
+}
+.t10-card:hover {
+  transform: translateY(-8px);
+}
+.t10-card:hover .t10-poster img {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+}
+
+/* Poster */
+.t10-poster {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #1e293b;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+  margin-bottom: 10px;
+  /* Hardware-accelerated to stop border-radius clipping bug on hover */
+  transform: translateZ(0);
+}
+.t10-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 12px;
+  transition: box-shadow 0.2s ease;
+}
+
+/* Rating badges pinned to the bottom of the poster */
+.t10-badges {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  z-index: 2;
+}
+.t10-badge {
+  color: #fff;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+.t10-badge--gray { background: #475569; }
+.t10-badge--blue { background: #0284c7; }
+
+/* Bottom metadata: big rank + title text */
+.t10-meta {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding-left: 2px;
+}
+
+.t10-rank {
+  font-size: 4.5rem;
+  font-weight: 900;
+  font-style: italic;
+  line-height: 0.72;
+  letter-spacing: -3px;
+  color: transparent;
+  -webkit-text-stroke: 2px #facc15;
+  text-shadow: 0 4px 12px rgba(250, 204, 21, 0.4);
+  flex-shrink: 0;
+  margin-top: 4px;
+  user-select: none;
+}
+
+.t10-info {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-top: 4px;
+}
+
+.t10-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.t10-year {
+  font-size: 0.68rem;
+  color: #94a3b8;
+  margin: 3px 0 0;
+  white-space: nowrap;
+}
+
+/* Scroll arrows */
+.t10-arrow {
+  background: rgba(15, 23, 42, 0.95);
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  color: #fff;
+  border-radius: 50%;
+  width: 54px;
+  height: 54px;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: absolute;
+  z-index: 10;
+  top: 120px;
+  transform: translateY(-50%);
+  transition: all 0.2s ease;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
+  flex-shrink: 0;
+}
+.t10-arrow svg { width: 22px; height: 22px; display: block; }
+.t10-arrow:hover {
+  background: #38bdf8;
+  border-color: #38bdf8;
+  color: #0f172a;
+  transform: translateY(-50%) scale(1.08);
+  box-shadow: 0 8px 24px rgba(56, 189, 248, 0.5);
+}
+.t10-arrow--left  { left: -26px; }
+.t10-arrow--right { right: -26px; }

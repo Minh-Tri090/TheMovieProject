@@ -15,13 +15,13 @@ import ActorMovies from "./pages/ActorMovies";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Profile from "./pages/Profile";
+import PremiumPage from "./pages/PremiumPage";
 
-// 3. IMPORT CONTEXTS (Phải nằm trên cùng, trước khi sử dụng trong App)
+// 3. IMPORT CONTEXTS
 import { AuthProvider } from "./context/AuthContext";
 import { FavoriteProvider } from "./context/FavoriteContext";
 import { KidsModeProvider } from "./context/KidsModeContext";
 
-// 4. FUNCTION APP DUY NHẤT
 export default function App() {
   return (
     <AuthProvider>
@@ -33,18 +33,39 @@ export default function App() {
 
               <main className="app-shell-main">
                 <Routes>
-                  {/* Điều hướng chính */}
+                  {/* --- ĐIỀU HƯỚNG CHÍNH (KẾT HỢP HUY & TAI) --- */}
                   <Route path="/" element={<Home />} />
                   <Route path="/movie/:id" element={<MovieDetail />} />
+
+                  {/* Route xem phim mới từ bạn Tai */}
+                  <Route
+                    path="/watch/:id"
+                    element={<MovieDetail isWatchMode={true} />}
+                  />
+
                   <Route path="/search" element={<Search />} />
+
+                  {/* Các Route lọc theo thể loại/quốc gia mới từ bạn Tai */}
+                  <Route
+                    path="/genre/:name"
+                    element={<Search mode="genre" />}
+                  />
+                  <Route
+                    path="/country/:name"
+                    element={<Search mode="country" />}
+                  />
+
                   <Route path="/favorites" element={<Favorites />} />
                   <Route path="/history" element={<History />} />
                   <Route path="/actor/:actorName" element={<ActorMovies />} />
 
-                  {/* Xác thực & Cá nhân */}
+                  {/* --- XÁC THỰC & CÁ NHÂN --- */}
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Register />} />
                   <Route path="/profile" element={<Profile />} />
+
+                  {/* Trang Premium mới từ bạn Tai */}
+                  <Route path="/premium" element={<PremiumPage />} />
                 </Routes>
               </main>
 

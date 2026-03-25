@@ -1,28 +1,29 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useParams, Link } from 'react-router-dom';
 import MovieCard from '../components/MovieCard';
-import { searchMovies } from '../services/api';
+import { searchMovies, getMoviesByGenre, getMoviesByCountry } from '../services/api';
 
-export default function Search() {
+export default function Search({ mode: propMode }) {
 	const [movies, setMovies] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [query, setQuery] = useState('');
 
 	const location = useLocation();
-	const mode = location.state?.mode || 'default';
+	const { name } = useParams();
+	const mode = propMode || location.state?.mode || 'default';
 
 	// read query param `q` from URL; if present we hide the page input and use it
 	const urlParams = new URLSearchParams(location.search);
 	const urlQuery = urlParams.get('q') || '';
 
 	const titleByMode = {
-		default: 'Tìm kiếm phim',
+		default: urlQuery ? `Kết quả cho "${urlQuery}"` : 'Tìm kiếm phim',
 		topic: 'Khám phá theo chủ đề',
-		genre: 'Tìm theo thể loại',
+		genre: name ? `Thể loại: ${name}` : 'Tìm theo thể loại',
 		single: 'Phim lẻ nổi bật',
 		series: 'Phim bộ hay',
 		together: 'Xem phim cùng bạn bè',
-		country: 'Phim theo quốc gia',
+		country: name ? `Phim ${name}` : 'Phim theo quốc gia',
 		actor: 'Tìm phim theo diễn viên',
 		schedule: 'Lịch chiếu & phim sắp ra mắt',
 		reviews: 'Khám phá reviews phim',
@@ -31,11 +32,11 @@ export default function Search() {
 	const subtitleByMode = {
 		default: 'Nhập tên phim bạn muốn tìm. Kết quả sẽ hiển thị theo thời gian thực.',
 		topic: 'Chọn hoặc nhập chủ đề bạn quan tâm (hành động, tình cảm, gia đình,...).',
-		genre: 'Nhập thể loại hoặc tên phim thuộc thể loại bạn muốn xem.',
+		genre: name ? `Danh sách phim thuộc thể loại ${name} cập nhật mới nhất.` : 'Nhập thể loại hoặc tên phim thuộc thể loại bạn muốn xem.',
 		single: 'Gợi ý các phim lẻ dễ xem nhanh trong một buổi.',
 		series: 'Tìm các bộ phim nhiều tập để cày vào cuối tuần.',
 		together: 'Gợi ý phim phù hợp để xem chung với bạn bè hoặc người thân.',
-		country: 'Nhập tên quốc gia hoặc vùng miền để lọc phim.',
+		country: name ? `Tất cả phim từ ${name} đang có trên hệ thống.` : 'Nhập tên quốc gia hoặc vùng miền để lọc phim.',
 		actor: 'Nhập tên diễn viên bạn yêu thích để tìm các phim liên quan.',
 		schedule: 'Xem danh sách phim đang chiếu và sắp chiếu (dựa trên dữ liệu hiện có).',
 		reviews: 'Tìm phim theo đánh giá, bình luận và độ nổi tiếng.',
@@ -44,7 +45,7 @@ export default function Search() {
 	const placeholderByMode = {
 		default: 'Ví dụ: Avengers, Inception...',
 		topic: 'Ví dụ: Siêu anh hùng, Tình cảm gia đình...',
-		genre: 'Ví dụ: Action, Drama, Comedy...',
+		genre: 'Ví dụ: Hành động, Kinh dị...',
 		single: 'Nhập tên phim lẻ bạn muốn xem...',
 		series: 'Nhập tên phim bộ bạn muốn xem...',
 		together: 'Ví dụ: phim nhẹ nhàng, phim gia đình...',
@@ -56,23 +57,36 @@ export default function Search() {
 
 	useEffect(() => {
 		let mounted = true;
-		const q = urlQuery;
-		setQuery(q);
+		const activeTerm = name || urlQuery;
+		setQuery(activeTerm);
 		setLoading(true);
-		searchMovies(q)
-			.then((data) => {
-				if (!mounted) return;
-				setMovies(data);
-				setLoading(false);
-			})
-			.catch(() => {
-				if (!mounted) return;
-				setLoading(false);
-			});
+
+		const fetchData = async () => {
+			try {
+				let data = [];
+				if (mode === 'genre' && name) {
+					data = await getMoviesByGenre(name);
+				} else if (mode === 'country' && name) {
+					data = await getMoviesByCountry(name);
+				} else {
+					data = await searchMovies(activeTerm);
+				}
+				
+				if (mounted) {
+					setMovies(data);
+					setLoading(false);
+				}
+			} catch (err) {
+				if (mounted) setLoading(false);
+			}
+		};
+
+		fetchData();
+
 		return () => {
 			mounted = false;
 		};
-	}, [location.search]);
+	}, [location.pathname, location.search, name]);
 
 	const handleChange = async (e) => {
 		const value = e.target.value;

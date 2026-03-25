@@ -58,8 +58,16 @@ export function AuthProvider({ children }) {
     window.location.href = "/";
   };
 
+  const upgradeToPremium = () => {
+    if (user) {
+      const updatedUser = { ...user, role: "premium" };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      setUser(updatedUser);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, register }}>
+    <AuthContext.Provider value={{ user, login, logout, register, upgradeToPremium }}>
       {children}
     </AuthContext.Provider>
   );

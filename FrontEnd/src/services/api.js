@@ -1,150 +1,137 @@
 import axios from "axios";
 
 // ==========================================
-// 1. CẤU HÌNH BIẾN MÔI TRƯỜNG & HẰNG SỐ
+// 1. CẤU HÌNH & HẰNG SỐ
 // ==========================================
 const TMDB_API_KEY = "9ba80114bb38fd0762fd585252885e68";
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 const IMAGE_BASE = "https://image.tmdb.org/t/p/w500";
-const BACKDROP_BASE = "https://image.tmdb.org/t/p/w1280";
-const FAVORITES_KEY = "themovie_favorites";
-const CUSTOM_MOVIES_KEY = "themovie_custom_movies";
-
-// Ảnh mặc định khi phim không có poster
+const BACKDROP_BASE = "https://image.tmdb.org/t/p/original";
 const PLACEHOLDER = "https://via.placeholder.com/300x450?text=No+Image";
+
+const GENRE_MAP = {
+  "Hành Động": 28,
+  "Phiêu Lưu": 12,
+  "Hoạt Hình": 16,
+  Hài: 35,
+  "Hình Sự": 80,
+  "Tài Liệu": 99,
+  "Chính Kịch": 18,
+  "Gia Đình": 10751,
+  "Kỳ Ảo": 14,
+  "Lịch Sử": 36,
+  "Kinh Dị": 27,
+  "Âm Nhạc": 10402,
+  "Bí Ẩn": 9648,
+  "Lãng Mạn": 10749,
+  "Khoa Học Viễn Tưởng": 878,
+  "Phim Truyền Hình": 10770,
+  "Gây Cấn": 53,
+  "Chiến Tranh": 10752,
+  "Miền Tây": 37,
+};
 
 // ==========================================
 // 2. KHỞI TẠO AXIOS INSTANCES
 // ==========================================
-
-// Instance dành cho TMDB (Dữ liệu phim quốc tế)
 const tmdbApi = axios.create({
   baseURL: TMDB_BASE_URL,
-  params: {
-    api_key: TMDB_API_KEY,
-    language: "vi-VN",
-  },
+  params: { api_key: TMDB_API_KEY, language: "vi-VN" },
 });
 
-// Instance dành cho Backend của Huy (Node.js + MongoDB)
 export const backendApi = axios.create({
   baseURL: "http://localhost:5000/api",
 });
 
-// Interceptor: Tự động đính kèm Token vào Header cho Backend
 backendApi.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    
-    // Thêm user-id vào headers để backend có thể xác định người dùng
-    if (user.id) {
-      config.headers["user-id"] = user.id;
-    }
-    
+    if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
   },
   (error) => Promise.reject(error),
 );
 
 // ==========================================
-// 3. HÀM CHUẨN HÓA DỮ LIỆU (MAPPING)
+// 3. CHUẨN HÓA DỮ LIỆU
 // ==========================================
-// Hàm này cực kỳ quan trọng: Ép dữ liệu từ 2 nguồn về 1 kiểu để MovieCard không bị lỗi
 function normalizeMovie(m) {
   if (!m) return null;
   return {
-    // Ưu tiên lấy ID từ MongoDB (_id), nếu không có thì lấy ID từ TMDB
     id: m._id || m.id,
+    tmdbId: m.id, // Giữ ID gốc của TMDB để dùng cho Player/Trailer
     title: m.title || m.name || "Chưa có tiêu đề",
-    // Xử lý năm sản xuất
     year: m.release_date
       ? new Date(m.release_date).getFullYear()
       : m.year || "N/A",
-    // Xử lý điểm đánh giá
     rating: m.vote_average ? Number(m.vote_average.toFixed(1)) : m.rating || 0,
-    // Xử lý ảnh Poster (Ép về 1 trường 'poster' duy nhất)
     poster: m.poster_path
       ? `${IMAGE_BASE}${m.poster_path}`
       : m.poster || PLACEHOLDER,
-    // Xử lý ảnh nền
     backdrop: m.backdrop_path
       ? `${BACKDROP_BASE}${m.backdrop_path}`
       : m.backdrop || m.poster || PLACEHOLDER,
     overview: m.overview || "Không có mô tả cho bộ phim này.",
+    isKidsFriendly: m.isKidsFriendly || false,
+    genres: m.genres || [],
   };
 }
 
 // ==========================================
-// 4. CÁC HÀM GỌI API PHIM (HYBRID)
+// 4. CÁC HÀM GỌI PHIM (HYBRID)
 // ==========================================
-
-// Lấy danh sách phim trang chủ (Gộp cả Phim của Huy + TMDB)
-// src/services/api.js
 
 export async function getMovies(isKidsMode = false) {
   try {
-    // 1. Cấu hình Params cho TMDB
-    const tmdbParams = isKidsMode
-      ? { with_genres: "16,10751" } // Chỉ lấy Hoạt hình & Gia đình
-      : {};
-
+    const tmdbParams = isKidsMode ? { with_genres: "16,10751" } : {};
     const [tmdbRes, backendRes] = await Promise.all([
       tmdbApi.get("/movie/popular", { params: tmdbParams }),
       backendApi.get("/movies"),
     ]);
-
     let tmdbMovies = (tmdbRes.data.results || []).map(normalizeMovie);
     let customMovies = (backendRes.data || []).map(normalizeMovie);
-
-    // 2. Lọc phim của Huy nếu đang ở chế độ Trẻ em
-    if (isKidsMode) {
-      customMovies = customMovies.filter((m) => m.isKidsFriendly === true);
-    }
-
+    if (isKidsMode) customMovies = customMovies.filter((m) => m.isKidsFriendly);
     return [...customMovies, ...tmdbMovies];
   } catch (error) {
-    console.error("Lỗi lấy phim:", error);
     return [];
   }
 }
 
-// Tìm kiếm phim theo từ khóa
-export async function searchMovies(query) {
-  if (!query) return getMovies();
+export async function searchMovies(query, isKidsMode = false) {
+  if (!query) return getMovies(isKidsMode);
   try {
-    const res = await tmdbApi.get("/search/movie", { params: { query } });
+    const params = {
+      query,
+      ...(isKidsMode ? { with_genres: "16,10751" } : {}),
+    };
+    const res = await tmdbApi.get("/search/movie", { params });
     return (res.data.results || []).map(normalizeMovie);
   } catch (error) {
     return [];
   }
 }
 
-// Lấy chi tiết một bộ phim
 export async function getMovieById(id) {
   try {
-    // 1. Nếu ID có độ dài 24 ký tự -> Đây là phim từ MongoDB của Huy
+    // 1. Check Backend của Huy (MongoDB ID thường dài 24 ký tự)
     if (String(id).length === 24) {
       const res = await backendApi.get(`/movies/${id}`);
-      return normalizeMovie(res.data); // Dùng hàm này để format dữ liệu cho đồng nhất
+      return normalizeMovie(res.data);
     }
-
-    // 2. Nếu không, gọi API của TMDB như bình thường
+    // 2. Gọi TMDB (ID số)
     const res = await tmdbApi.get(`/movie/${id}`, {
       params: { append_to_response: "credits,videos" },
     });
-
     const base = normalizeMovie(res.data);
     return {
       ...base,
+      runtime: res.data.runtime,
+      releaseDate: res.data.release_date,
       genres: (res.data.genres || []).map((g) => g.name),
       cast: (res.data.credits?.cast || []).slice(0, 12).map((c) => ({
         id: c.id,
         name: c.name,
+        character: c.character,
         avatar: c.profile_path ? `${IMAGE_BASE}${c.profile_path}` : PLACEHOLDER,
       })),
       trailer: res.data.videos?.results?.find(
@@ -152,129 +139,67 @@ export async function getMovieById(id) {
       )?.key,
     };
   } catch (error) {
-    console.error("Lỗi lấy chi tiết phim:", error);
     return null;
   }
 }
 
 // ==========================================
-// 5. CHỨC NĂNG DIỄN VIÊN (THEO YÊU CẦU CỦA HUY)
+// 5. CÁC TÍNH NĂNG MỚI (PHONG CÁCH NETFLIX)
 // ==========================================
 
-// Lấy danh sách phim TMDB theo diễn viên
-export const getTmdbMoviesByActor = async (actorName) => {
-  try {
-    const searchRes = await tmdbApi.get("/search/person", {
-      params: { query: actorName },
-    });
-    const personId = searchRes.data.results[0]?.id;
-    if (!personId) return [];
-
-    const creditsRes = await tmdbApi.get(`/person/${personId}/movie_credits`);
-    return (creditsRes.data.cast || []).slice(0, 20).map(normalizeMovie);
-  } catch (error) {
-    console.error("Lỗi TMDB Actor:", error);
-    return [];
-  }
-};
-
-// Lấy danh sách phim Backend theo diễn viên
-export const getLocalMoviesByActor = async (actorName) => {
-  try {
-    const res = await backendApi.get(`/movies/actor/${actorName}`);
-    return (res.data || []).map(normalizeMovie);
-  } catch (error) {
-    return [];
-  }
-};
-
-// Lấy danh sách diễn viên đang hot (Cho menu)
-export async function getTrendingPeople() {
-  try {
-    const res = await tmdbApi.get("/trending/person/week");
-    return (res.data.results || []).map((p) => ({
-      id: p.id,
-      name: p.name,
-      avatar: p.profile_path ? `${IMAGE_BASE}${p.profile_path}` : PLACEHOLDER,
-    }));
-  } catch (error) {
-    return [];
-  }
+export async function getMoviesByGenre(genreName) {
+  const genreId = GENRE_MAP[genreName];
+  const params = genreId ? { with_genres: genreId } : { query: genreName };
+  const endpoint = genreId ? "/discover/movie" : "/search/movie";
+  const res = await tmdbApi.get(endpoint, { params });
+  return (res.data.results || []).map(normalizeMovie);
 }
 
-
-// --- QUẢN LÝ LỊCH SỬ XEM PHIM ---
-export async function recordMovieView(movieId, movieTitle, duration = 0) {
-  try {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    if (!user.id) {
-      console.warn("Người dùng chưa đăng nhập, không thể lưu lịch sử");
-      return;
-    }
-
-    const res = await backendApi.post("/history/add", {
-      movieId,
-      movieTitle,
-      duration,
-    });
-    return res.data;
-  } catch (error) {
-    console.error("Lỗi khi lưu lịch sử xem:", error);
-  }
+export async function getMoviesByCountry(countryName) {
+  const codeMap = {
+    "Âu Mỹ": "US",
+    "Trung Quốc": "CN",
+    "Hàn Quốc": "KR",
+    "Nhật Bản": "JP",
+  };
+  const code = codeMap[countryName];
+  const params = code ? { with_origin_country: code } : { query: countryName };
+  const endpoint = code ? "/discover/movie" : "/search/movie";
+  const res = await tmdbApi.get(endpoint, { params });
+  return (res.data.results || []).map(normalizeMovie);
 }
 
-export async function getUserHistory() {
-  try {
-    const res = await backendApi.get("/history/user");
-    return res.data;
-  } catch (error) {
-    console.error("Lỗi khi lấy lịch sử:", error);
-    return [];
-  }
+export async function getTrendingMovies() {
+  const res = await tmdbApi.get("/trending/movie/day");
+  return (res.data.results || []).slice(0, 10).map(normalizeMovie);
 }
 
-export async function getAllHistory() {
-  try {
-    const res = await backendApi.get("/history/all");
-    return res.data;
-  } catch (error) {
-    console.error("Lỗi khi lấy lịch sử:", error);
-    return [];
-  }
+export async function getTrailerMovies() {
+  const res = await tmdbApi.get("/movie/now_playing");
+  return (res.data.results || []).slice(0, 12).map(normalizeMovie);
 }
-
-export async function clearUserHistory() {
-  try {
-    const res = await backendApi.delete("/history/clear");
-    return res.data;
-  } catch (error) {
-    console.error("Lỗi khi xóa lịch sử:", error);
-  }
-}
-
 
 // ==========================================
-// 6. QUẢN LÝ USER & ADMIN (BACKEND)
+// 6. QUẢN LÝ LỊCH SỬ & YÊU THÍCH (HUY)
 // ==========================================
 
-export const addCustomMovie = async (movieData) => {
-  const res = await backendApi.post("/movies/add", movieData);
-  return res.data;
-};
+export async function recordMovieView(movieId, movieTitle) {
+  try {
+    await backendApi.post("/history/add", { movieId, movieTitle });
+  } catch (e) {
+    console.error(e);
+  }
+}
 
-export const deleteMovie = async (id) => {
-  return await backendApi.delete(`/movies/${id}`);
-};
-
-export const getFavorites = async () => {
-  return await backendApi.get("/users/favorites");
-};
-
-// src/services/api.js
-
-// Sửa lại để nhận thêm tham số movieData
 export const toggleFavoriteApi = async (movieId, movieData) => {
-  // Gửi movieData vào phần body của request POST
   return await backendApi.post(`/users/favorite/${movieId}`, movieData);
 };
 
+export const getFavorites = async () =>
+  (await backendApi.get("/users/favorites")).data;
+
+export const deleteMovie = async (id) =>
+  await backendApi.delete(`/movies/${id}`);
+
+export const addCustomMovie = async (movieData) =>
+  (await backendApi.post("/movies/add", movieData)).data;

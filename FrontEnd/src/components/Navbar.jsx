@@ -169,7 +169,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="site-header" onMouseLeave={closeMenu}>
+    <header className="site-header">
       <div className="container site-header-inner header-layout">
         {/* 1. Logo */}
         <div
@@ -210,40 +210,75 @@ export default function Navbar() {
 
         {/* 3. Navigation Links */}
         <nav className="header-menu">
-          <button
-            className="header-menu-item"
-            onClick={() => toggleMenu("topic")}
-          >
-            Chủ đề
-          </button>
-          <button
-            className="header-menu-item"
-            onClick={() => toggleMenu("genre")}
-          >
-            Thể loại
-          </button>
-          <button
-            className="header-menu-item"
-            onClick={() => toggleMenu("country")}
-          >
-            Quốc gia
-          </button>
+
+          {/* THỂ LOẠI */}
+          <div className="nav-item-wrapper">
+            <button
+              className={`header-menu-item ${openMenu === "genre" ? "active" : ""}`}
+              onClick={() => toggleMenu("genre")}
+            >
+              Thể loại <span style={{fontSize: '0.7em', marginLeft: '4px'}}>▼</span>
+            </button>
+            {openMenu === "genre" && (
+              <div className="mega-menu">
+                <div className="mega-menu-inner">
+                  {[
+                    "Hành Động",   "Phiêu Lưu",   "Hoạt Hình",   "Hài",
+                    "Hình Sự",     "Tài Liệu",    "Chính Kịch",  "Gia Đình",
+                    "Kỳ Ảo",       "Lịch Sử",     "Kinh Dị",     "Âm Nhạc",
+                    "Bí Ẩn",       "Lãng Mạn",    "Khoa Học Viễn Tưởng", "Phim Truyền Hình",
+                    "Gây Cấn",     "Chiến Tranh", "Miền Tây"
+                  ].map((it) => (
+                    <Link key={it} to={`/genre/${it}`} className="mega-menu-item" onClick={closeMenu}>{it}</Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* QUỐC GIA */}
+          <div className="nav-item-wrapper">
+            <button
+              className={`header-menu-item ${openMenu === "country" ? "active" : ""}`}
+              onClick={() => toggleMenu("country")}
+            >
+              Quốc gia <span style={{fontSize: '0.7em', marginLeft: '4px'}}>▼</span>
+            </button>
+            {openMenu === "country" && (
+              <div className="mega-menu">
+                <div className="mega-menu-inner" style={{ gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px 20px' }}>
+                  {["Âu Mỹ", "Hàn Quốc", "Trung Quốc", "Việt Nam", "Thái Lan", "Nhật Bản", "Ấn Độ", "Đài Loan"].map((it) => (
+                    <Link key={it} to={`/country/${it}`} className="mega-menu-item" onClick={closeMenu}>{it}</Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
           <button
             className="header-menu-item"
             onClick={() => toggleMenu("actor")}
           >
-            Diễn viên
+            Diễn Viên
           </button>
+
 
           {user && user.role === "admin" && (
             <button
               type="button"
               className="header-menu-item text-sky-400 font-bold"
-              onClick={() => setIsAddMovieOpen(true)}
+              onClick={() => setIsAddMovieOpen(!isAddMovieOpen)}
             >
               <FiPlus className="inline mr-1" /> Thêm phim
             </button>
           )}
+          
+          <button
+            className="btn-premium"
+            onClick={() => navigate("/premium")}
+          >
+            Premium
+          </button>
         </nav>
         {/* --- NÚT GẠT CHẾ ĐỘ TRẺ EM --- */}
         <div className="kids-toggle-wrapper">
@@ -463,7 +498,7 @@ export default function Navbar() {
                   }
                   required
                 />
-                <div className="flex gap-2 mb-2">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '8px' }}>
                   <input
                     className="input flex-1"
                     placeholder="Năm"
@@ -530,53 +565,9 @@ export default function Navbar() {
       </div>
 
       {/* --- MEGA MENUS (Topic, Genre, Country, Actor) --- */}
-      {openMenu === "topic" && (
-        <div className="topic-strip">
-          <div className="topic-strip-inner">
-            {[
-              "Viễn Tưởng",
-              "Thái Lan",
-              "Sitcom",
-              "Chiếu Rạp",
-              "Kinh Dị",
-              "Cổ Trang",
-              "4K",
-              "Chiến Tranh",
-            ].map((t) => (
-              <div key={t} className="topic-card">
-                <div className="topic-card-title">{t}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
-      {(openMenu === "genre" || openMenu === "country") && (
-        <div className="mega-menu">
-          <div className="container mega-menu-inner">
-            {(openMenu === "genre"
-              ? [
-                  "Hành động",
-                  "Hoạt hình",
-                  "Hài",
-                  "Kinh dị",
-                  "Lãng mạn",
-                  "Viễn tưởng",
-                ]
-              : ["Âu Mỹ", "Hàn Quốc", "Trung Quốc", "Việt Nam", "Thái Lan"]
-            ).map((item) => (
-              <Link
-                key={item}
-                to={`/${openMenu}/${item}`}
-                className="mega-menu-item"
-                onClick={closeMenu}
-              >
-                {item}
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
+
+
 
       {openMenu === "actor" && (
         <div className="actor-panel">
