@@ -1,111 +1,204 @@
 /* ==========================================
-   PHẦN 1: LAYOUT & CHUNG (Hệ khung xương)
+   1. CORE & LAYOUT (Hệ khung xương tối)
    ========================================== */
-.hide-scrollbar {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+:root {
+  --primary-blue: #3b82f6;
+  --netflix-red: #e50914;
+  --bg-dark: #0f172a;
+  --bg-surface: #1e293b;
+  --text-main: #f8fafc;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+body {
+  margin: 0;
+  background-color: var(--bg-dark) !important;
+  color: var(--text-main);
+  font-family: "Inter", sans-serif;
+}
+
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
-
 .app-shell {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: #0f172a; /* Màu đen tối chuẩn Netflix */
-  color: #f8fafc;
+}
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
 }
 
-.app-shell-main {
-  flex: 1;
-  padding-top: 12px;
-  padding-bottom: 40px;
-}
-
+/* ==========================================
+   2. SITE HEADER & NAVBAR (Tối ưu từ Tai)
+   ========================================== */
 .site-header {
   position: sticky;
   top: 0;
-  z-index: 100; /* Tăng z-index để nằm trên các popover */
+  z-index: 1000;
   backdrop-filter: blur(16px);
-  background: linear-gradient(
-    90deg,
-    rgba(15, 23, 42, 0.88),
-    rgba(15, 23, 42, 0.94)
-  );
-  border-bottom: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(15, 23, 42, 0.85);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .site-header-inner {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 0;
-  flex-wrap: nowrap !important;
+  height: 68px;
+  gap: 20px;
 }
 
-/* ... (Các class Header, Search, Menu khác giữ nguyên) ... */
+/* Logo */
+.header-logo {
+  font-weight: 800;
+  font-size: 1.4rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+/* Thanh tìm kiếm của Tai */
+.header-search {
+  flex: 0 1 300px;
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  border-radius: 999px;
+  padding: 6px 14px;
+  gap: 10px;
+}
+
+.header-search-input {
+  background: transparent !important;
+  border: none !important;
+  color: #fff;
+  width: 100%;
+  outline: none;
+  font-size: 0.9rem;
+}
+
+/* Menu điều hướng (Fix lỗi ô trắng) */
+.header-menu {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.header-menu-item {
+  background: transparent !important;
+  border: none !important;
+  color: #cbd5e1 !important;
+  padding: 8px 14px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: var(--transition);
+}
+.header-menu-item:hover,
+.header-menu-item.active {
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Mega Menu (Dropdown Thể loại/Quốc gia) */
+.mega-menu {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  min-width: 500px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  z-index: 1100;
+}
+
+.mega-menu-inner {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.mega-menu-item {
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: 0.85rem;
+  padding: 6px;
+  border-radius: 4px;
+  transition: 0.2s;
+}
+.mega-menu-item:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Premium & Member */
+.btn-premium {
+  background: linear-gradient(135deg, #facc15, #f59e0b) !important;
+  color: #000 !important;
+  font-weight: 800;
+  padding: 6px 16px;
+  border-radius: 6px;
+  border: none;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.header-member-btn {
+  background: transparent !important;
+  border: none !important;
+  color: #fff !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
 /* ==========================================
-   PHẦN 2: MOVIE CARD & GRID (NETFLIX STYLE)
+   3. MOVIE CARD & HOVER POPOVER (NETFLIX)
    ========================================== */
-
-/* Base definitions for the grid and card */
 .movie-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 16px;
-  align-items: stretch;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+  padding: 20px 0;
 }
 
 .movie-card {
-  background: radial-gradient(
-    circle at top,
-    rgba(30, 64, 175, 0.4),
-    rgba(15, 23, 42, 0.96)
-  );
-  border-radius: 14px;
+  position: relative;
+  border-radius: 8px;
   overflow: hidden;
-  border: 1px solid rgba(129, 140, 248, 0.8);
-  transition:
-    transform 140ms ease,
-    border-color 140ms ease;
-  height: 100%;
+  transition: var(--transition);
+  cursor: pointer;
+  border: none !important;
 }
 
 .movie-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(250, 250, 250, 0.9);
+  transform: scale(1.1);
+  z-index: 500;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
 }
 
-/* --- PHẦN 2B: NETFLIX HOVER UI (ĐÃ SỬA VÀ THÊM LẠI) --- */
-
-/* Thêm Class container cho MovieCard để quản lý Hover */
-.movie-card-wrapper {
-  position: relative;
-  overflow: visible; /* Quan trọng để popover không bị cắt */
-  height: 100%;
-}
-
-/* Thêm Class popover rendered via createPortal */
 .movie-popover {
-  width: 300px; /* Tăng kích thước popover */
-  transform: translate(-50%, -50%); /* Căn giữa */
-  background-color: #141414; /* Màu đen Netflix chuẩn */
-  border-radius: 12px;
-  overflow: hidden;
-  z-index: 999999; /* Luôn nằm trên cùng */
-  box-shadow:
-    0 10px 30px rgba(0, 0, 0, 0.9),
-    0 0 0 1px rgba(255, 255, 255, 0.1); /* Shadow sâu + viền tinh tế */
-  animation: popoverFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards; /* Entrance animation */
+  position: fixed;
+  width: 340px;
+  background: #181818;
+  border-radius: 10px;
+  z-index: 9999;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9);
+  animation: bungPopover 0.3s ease-out forwards;
 }
 
-@keyframes popoverFadeIn {
+@keyframes bungPopover {
   from {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.95);
+    transform: translate(-50%, -50%) scale(0.8);
   }
   to {
     opacity: 1;
@@ -113,143 +206,28 @@
   }
 }
 
-/* Thêm Class cho ảnh nền trên popover */
-.popover-backdrop {
-  width: 100%;
-  height: 160px; /* Chiều cao ảnh backdrop */
-  object-fit: cover;
-  cursor: pointer;
-  display: block;
-}
-
-/* Thêm Class nội dung dưới ảnh */
 .popover-content {
   padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
 }
-
-/* Thêm Class tiêu đề phim trên popover */
-.popover-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin: 0;
-  color: #fff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Thêm Class cho hàng nút Play/Fav/Info */
-.popover-actions {
-  display: flex;
-  gap: 8px;
-}
-
-/* General button in popover */
-.popover-actions button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 8px 12px;
-  border-radius: 6px;
-  border: none;
-  font-weight: 600;
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-/* Small Play button */
 .btn-play-sm {
-  background-color: #e50914; /* Màu đỏ Netflix */
-  color: #fff;
-}
-.btn-play-sm:hover {
-  background-color: #f6121d;
-}
-
-/* Action buttons (favorite, info) */
-.btn-action-sm {
-  background-color: #2a2a2a; /* Màu xám tối */
-  color: #fff;
-}
-.btn-action-sm:hover {
-  background-color: #383838;
-}
-
-/* Tags row (ratings, year, badges) */
-.popover-tags {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  font-size: 0.8rem;
-  color: #b3b3b3; /* Lighter text color */
-}
-
-/* General badge style */
-.p-badge {
-  padding: 2px 6px;
+  background: #fff !important;
+  color: #000 !important;
   border-radius: 4px;
-  font-weight: 700;
-  color: #fff;
-  display: inline-block;
-}
-
-/* IMDb rating badge */
-.p-badge.imdb {
-  border: 1px solid #f5c518; /* Viền vàng IMDb */
-  color: #f5c518;
-}
-
-/* Age rating badge */
-.p-badge.age {
-  background-color: #475569; /* Nền xám */
-}
-
-/* Plain text tags (year, updates) */
-.p-text {
-  /* Simple style inherited from popover-tags */
+  font-weight: bold;
 }
 
 /* ==========================================
-   PHẦN 3: ĐOẠN CODE TỪ HUY (KIDS MODE & FAVORITES)
+   4. CHỨC NĂNG CỦA HUY (KIDS MODE & ADMIN)
    ========================================== */
-
-/* Lưới cho trang Yêu thích */
-.movies-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 25px;
-  padding: 20px 0;
-}
-
-.favorites-page {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 80px 20px 40px;
-}
-
-/* CSS CHO NÚT KIDS MODE (HUY VIẾT) */
 .kids-toggle-wrapper {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 5px 12px;
-  background: rgba(30, 41, 59, 0.6);
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 20px;
-  border: 1px solid rgba(71, 85, 105, 0.5);
-  margin-left: 15px;
-  transition: all 0.3s ease;
-}
-
-.kids-toggle-label {
-  font-size: 10px;
-  font-weight: 800;
-  text-transform: uppercase;
-  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
 }
 
 .kids-toggle-label.active {
@@ -259,57 +237,81 @@
 
 .kids-toggle-btn {
   position: relative;
-  width: 38px;
-  height: 20px;
+  width: 34px;
+  height: 18px;
   border-radius: 10px;
-  background-color: #475569;
+  background: #475569;
   border: none;
-  cursor: pointer;
 }
-
 .kids-toggle-btn.on {
-  background-color: #22c55e;
+  background: #22c55e;
 }
-
 .kids-toggle-thumb {
   position: absolute;
-  top: 3px;
-  left: 3px;
+  top: 2px;
+  left: 2px;
   width: 14px;
   height: 14px;
-  background-color: white;
+  background: white;
   border-radius: 50%;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: 0.3s;
+}
+.kids-toggle-btn.on .kids-toggle-thumb {
+  transform: translateX(16px);
 }
 
-.kids-toggle-btn.on .kids-toggle-thumb {
-  transform: translateX(18px);
+/* Form Admin Panel */
+.auth-panel {
+  background: #1e293b;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 100%;
+  max-width: 400px;
+}
+
+.input {
+  width: 100%;
+  background: #0f172a;
+  border: 1px solid #334155;
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 8px;
+  outline: none;
+}
+.input:focus {
+  border-color: var(--primary-blue);
 }
 
 /* ==========================================
-   PHẦN 4: ĐOẠN CODE TỪ TAI (NÚT PLAY CHI TIẾT)
+   5. USER DROPDOWN (Phần của Tai)
    ========================================== */
-.detail-play-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  border-radius: 999px;
-  padding: 12px 36px;
-  background: linear-gradient(90deg, #fae27d, #fac348);
-  color: #111827;
-  border: none;
-  font-weight: 600;
-  font-size: 1.15rem;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  box-shadow: 0 4px 15px rgba(250, 195, 72, 0.3);
-  margin-top: 20px;
+.user-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 220px;
+  background: #141414;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  padding: 10px 0;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
 }
 
-.detail-play-btn:hover {
-  background: linear-gradient(90deg, #f7d962, #f5b022);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(250, 195, 72, 0.5);
-  color: #000;
+.dropdown-item {
+  width: 100%;
+  padding: 10px 20px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+}
+.dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  text-decoration: underline;
 }
