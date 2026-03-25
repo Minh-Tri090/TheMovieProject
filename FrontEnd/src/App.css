@@ -1339,3 +1339,9 @@
   box-shadow: 0 8px 25px rgba(250, 195, 72, 0.5);
   color: #000;
 }
+.movies-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 25px;
+  padding: 20px 0;
+}

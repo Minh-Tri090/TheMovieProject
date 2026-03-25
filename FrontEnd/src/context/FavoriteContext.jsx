@@ -17,9 +17,10 @@ export const FavoriteProvider = ({ children }) => {
         try {
           setLoading(true);
           const response = await getFavorites();
-          setFavorites(response.data); // Backend trả về mảng Object phim
+          setFavorites(response.data || []);
         } catch (error) {
-          console.error("Lỗi lấy danh sách yêu thích:", error);
+          console.error("Lỗi fetch favorites:", error);
+          // Nếu lỗi do token hết hạn (401), có thể xử lý logout ở đây
         } finally {
           setLoading(false);
         }

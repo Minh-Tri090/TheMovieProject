@@ -13,7 +13,7 @@ export default function Favorites() {
 
       {loading ? (
         <div className="text-center py-20">Đang tải danh sách...</div>
-      ) : favorites.length > 0 ? (
+      ) : favorites && favorites.length > 0 ? ( // THÊM: Kiểm tra favorites có tồn tại trước khi check length
         <div className="movies-grid">
           {favorites.map((movie) => (
             <MovieCard key={movie._id || movie.id} movie={movie} />
