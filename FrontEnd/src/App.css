@@ -436,7 +436,7 @@
   transform: translate(-50%, -50%);
   background: #1f273c;
   border-radius: 12px;
-  overflow: hidden;
+  overflow: visible; /* Cho phép button/tag trong popover nâng lên không bị cắt */
   z-index: 999999;
   box-shadow:
     0 35px 60px -15px rgba(0, 0, 0, 0.9),
@@ -610,6 +610,7 @@
   /* Hiệu ứng dấu 3 chấm nếu tên quá dài */
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   /* Chỉ hiện tối đa 2 dòng */
   -webkit-box-orient: vertical;
   overflow: hidden;
@@ -1082,7 +1083,7 @@
   display: flex;
   gap: 12px;
   overflow-x: auto;
-  padding: 0 20px 4px;
+  padding: 12px 20px 4px;
 }
 
 .topic-card {
@@ -1338,4 +1339,67 @@
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(250, 195, 72, 0.5);
   color: #000;
+}
+
+/* --- Kids toggle (OFF/ON) --- */
+.kids-toggle-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.65);
+}
+
+.kids-toggle-label {
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: #9ca3af;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.kids-toggle-label.active {
+  color: #fbbf24;
+}
+
+.kids-toggle-btn {
+  width: 48px;
+  height: 26px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  background: rgba(255, 255, 255, 0.06);
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.kids-toggle-btn.on {
+  background: rgba(251, 191, 36, 0.18);
+  border-color: rgba(251, 191, 36, 0.7);
+}
+
+.kids-toggle-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #94a3b8;
+  transform: translateX(3px);
+  transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.35);
+}
+
+.kids-toggle-btn.on .kids-toggle-thumb {
+  transform: translateX(25px);
+  background: #fbbf24;
+  box-shadow: 0 10px 22px rgba(251, 191, 36, 0.28);
+}
+
+.kids-toggle-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.35);
 }

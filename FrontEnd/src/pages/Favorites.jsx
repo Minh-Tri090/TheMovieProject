@@ -8,13 +8,13 @@ export default function Favorites() {
   return (
     <div className="favorites-page container mt-20 p-5">
       <h2 className="text-2xl font-bold mb-6 border-b border-slate-700 pb-2">
-        Danh sách phim yêu thích của Huy ❤️
+        Danh sách phim yêu thích của Bạn ❤️
       </h2>
 
       {loading ? (
         <div className="text-center py-20">Đang tải danh sách...</div>
       ) : favorites.length > 0 ? (
-        <div className="movies-grid">
+        <div className="movie-grid">
           {favorites.map((movie) => (
             <MovieCard key={movie._id || movie.id} movie={movie} />
           ))}
@@ -23,7 +23,7 @@ export default function Favorites() {
         <div className="text-center py-20 text-slate-400">
           <p className="text-4xl mb-4">🙊</p>
           <p>
-            Huy chưa có phim yêu thích nào. Quay lại trang chủ để khám phá nhé!
+            Bạn chưa có phim yêu thích nào. Quay lại trang chủ để khám phá nhé!
           </p>
         </div>
       )}

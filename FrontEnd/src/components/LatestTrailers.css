@@ -69,7 +69,7 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
   width: 100%;
-  padding: 4px 2px 20px;
+  padding: 10px 2px 20px;
 }
 .lt-rail::-webkit-scrollbar { display: none; }
 

@@ -160,7 +160,7 @@ export default function Home() {
                     display: "flex",
                     gap: "14px",
                     overflowX: "auto",
-                    padding: "4px 22px 16px",
+                    padding: "12px 22px 16px",
                   }}
                 >
                   {(isKidsMode

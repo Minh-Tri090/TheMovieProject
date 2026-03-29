@@ -2,62 +2,62 @@ const express = require("express");
 const router = express.Router();
 const ViewHistory = require("../models/ViewHistory");
 const Movie = require("../models/Movie");
-const User = require("../models/User");
+const { protect } = require("../middleware/authMiddleware");
 
-// Middleware xác thực người dùng (giả sử từ auth)
-const authMiddleware = (req, res, next) => {
-  const userId = req.headers["user-id"]; // Lấy từ header
-  if (!userId) {
-    return res.status(401).json({ message: "Không xác thực được người dùng" });
-  }
-  req.userId = userId;
-  next();
-};
-
-// 1. Thêm lịch sử xem phim
-router.post("/add", authMiddleware, async (req, res) => {
+// 1. Ghi / cập nhật lịch sử xem phim
+//    POST /api/history/log
+//    Body: { movieId, movieTitle, moviePoster, tmdbId, progress, duration }
+//    - movieId: MongoDB _id (nếu phim từ backend), hoặc null (nếu phim TMDB)
+//    - tmdbId: TMDB id (string/number), hoặc null nếu phim backend
+//    - progress: phần trăm đã xem (0-100), dùng để hiện "Đang xem"
+//    - duration: tổng số giây đã xem
+router.post("/log", protect, async (req, res) => {
   try {
-    const { movieId, movieTitle, duration } = req.body;
+    const { movieId, movieTitle, moviePoster, tmdbId, progress, duration } = req.body;
 
-    // Kiểm tra phim và người dùng tồn tại
-    const movie = await Movie.findById(movieId);
-    const user = await User.findById(req.userId);
+    // Tìm bản ghi lịch sử cũ (dùng movieId nếu có, không thì dùng tmdbId)
+    const query = {
+      user: req.user.id,
+      ...(movieId ? { movieId } : { tmdbId: String(tmdbId) }),
+    };
 
-    if (!movie || !user) {
-      return res.status(404).json({ message: "Phim hoặc người dùng không tìm thấy" });
-    }
-
-    // Kiểm tra xem có bản ghi cũ không, nếu có thì cập nhật thời gian
-    let history = await ViewHistory.findOne({
-      user: req.userId,
-      movie: movieId,
-    });
+    let history = await ViewHistory.findOne(query);
 
     if (history) {
+      // Cập nhật bản ghi cũ
       history.viewedAt = Date.now();
-      history.duration = duration || history.duration;
+      history.duration = duration ?? history.duration;
+      history.progress = progress ?? history.progress;
+      history.movieTitle = movieTitle || history.movieTitle;
+      history.moviePoster = moviePoster || history.moviePoster;
     } else {
+      // Tạo bản ghi mới
       history = new ViewHistory({
-        user: req.userId,
-        movie: movieId,
-        movieTitle: movieTitle || movie.title,
+        user: req.user.id,
+        movieId: movieId || null,
+        tmdbId: tmdbId ? String(tmdbId) : null,
+        movieTitle: movieTitle || "Không rõ",
+        moviePoster: moviePoster || "",
         duration: duration || 0,
+        progress: progress || 0,
       });
     }
 
     const saved = await history.save();
     res.status(201).json(saved);
   } catch (error) {
-    res.status(400).json({ message: "Lỗi khi thêm lịch sử xem" });
+    console.error("Lỗi ghi lịch sử:", error);
+    res.status(400).json({ message: "Lỗi khi ghi lịch sử xem" });
   }
 });
 
 // 2. Lấy lịch sử xem của người dùng hiện tại
-router.get("/user", authMiddleware, async (req, res) => {
+//    GET /api/history/user
+router.get("/user", protect, async (req, res) => {
   try {
-    const histories = await ViewHistory.find({ user: req.userId })
-      .populate("movie")
-      .sort({ viewedAt: -1 });
+    const histories = await ViewHistory.find({ user: req.user.id })
+      .sort({ viewedAt: -1 })
+      .limit(50); // Giới hạn 50 phim gần nhất
 
     res.json(histories);
   } catch (error) {
@@ -66,18 +66,17 @@ router.get("/user", authMiddleware, async (req, res) => {
 });
 
 // 3. Lấy toàn bộ lịch sử xem (chỉ admin)
-router.get("/all", authMiddleware, async (req, res) => {
+//    GET /api/history/all
+router.get("/all", protect, async (req, res) => {
   try {
-    // Kiểm tra xem người dùng có phải admin không
-    const user = await User.findById(req.userId);
-    if (user.role !== "admin") {
+    if (req.user.role !== "admin") {
       return res.status(403).json({ message: "Bạn không có quyền truy cập" });
     }
 
     const histories = await ViewHistory.find()
-      .populate("user")
-      .populate("movie")
-      .sort({ viewedAt: -1 });
+      .populate("user", "name email")
+      .sort({ viewedAt: -1 })
+      .limit(100);
 
     res.json(histories);
   } catch (error) {
@@ -85,39 +84,22 @@ router.get("/all", authMiddleware, async (req, res) => {
   }
 });
 
-// 4. Lấy thống kê phim được xem nhiều nhất
-router.get("/stats/top-movies", async (req, res) => {
+// 4. Xóa 1 mục lịch sử
+//    DELETE /api/history/:id
+router.delete("/:id", protect, async (req, res) => {
   try {
-    const topMovies = await ViewHistory.aggregate([
-      {
-        $group: {
-          _id: "$movie",
-          count: { $sum: 1 },
-          title: { $first: "$movieTitle" },
-        },
-      },
-      { $sort: { count: -1 } },
-      { $limit: 10 },
-      {
-        $lookup: {
-          from: "movies",
-          localField: "_id",
-          foreignField: "_id",
-          as: "movieDetails",
-        },
-      },
-    ]);
-
-    res.json(topMovies);
+    await ViewHistory.deleteOne({ _id: req.params.id, user: req.user.id });
+    res.json({ message: "Đã xóa mục lịch sử" });
   } catch (error) {
-    res.status(500).json({ message: "Lỗi khi lấy thống kê" });
+    res.status(500).json({ message: "Lỗi khi xóa lịch sử" });
   }
 });
 
-// 5. Xóa lịch sử xem của người dùng
-router.delete("/clear", authMiddleware, async (req, res) => {
+// 5. Xóa toàn bộ lịch sử của user
+//    DELETE /api/history/clear
+router.delete("/clear/all", protect, async (req, res) => {
   try {
-    await ViewHistory.deleteMany({ user: req.userId });
+    await ViewHistory.deleteMany({ user: req.user.id });
     res.json({ message: "Đã xóa lịch sử xem" });
   } catch (error) {
     res.status(500).json({ message: "Lỗi khi xóa lịch sử" });
