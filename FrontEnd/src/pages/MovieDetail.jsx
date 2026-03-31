@@ -360,7 +360,20 @@ export default function MovieDetail({ isWatchMode = false }) {
                 )}
                 <div className="detail-cast-grid" ref={castRef} onScroll={updateCastArrows}>
                   {movie.cast.map((c) => (
-                    <div key={c.id} className="detail-cast-card">
+                    <div
+                      key={c.id}
+                      className="detail-cast-card"
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => navigate(`/actor/${encodeURIComponent(c.name)}`)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          navigate(`/actor/${encodeURIComponent(c.name)}`);
+                        }
+                      }}
+                      style={{ cursor: 'pointer' }}
+                    >
                       <img src={c.avatar} alt={c.name} className="detail-cast-avatar" />
                       <div className="detail-cast-name">{c.name}</div>
                       {c.character && <div className="detail-cast-character">{c.character}</div>}

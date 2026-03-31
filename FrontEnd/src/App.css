@@ -425,6 +425,165 @@
   /* Đảm bảo các card cùng hàng cao bằng nhau */
 }
 
+.actor-movies-page {
+  padding-top: 20px;
+}
+
+.actor-movies-surface {
+  position: relative;
+  overflow: hidden;
+  padding: 28px;
+  background:
+    radial-gradient(circle at top right, rgba(56, 189, 248, 0.16), transparent 28%),
+    radial-gradient(circle at top left, rgba(245, 197, 24, 0.08), transparent 22%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.9));
+}
+
+.actor-movies-surface::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, 0.04), transparent 30%),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 34px,
+      rgba(148, 163, 184, 0.04) 34px,
+      rgba(148, 163, 184, 0.04) 35px
+    );
+  pointer-events: none;
+}
+
+.actor-movies-hero,
+.actor-movies-grid,
+.actor-movies-state {
+  position: relative;
+  z-index: 1;
+}
+
+.actor-movies-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 18px;
+  margin-bottom: 28px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.actor-movies-copy {
+  max-width: 720px;
+}
+
+.actor-movies-kicker {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  color: #7dd3fc;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.actor-movies-title {
+  margin: 0;
+  font-size: clamp(1.9rem, 3.5vw, 3rem);
+  line-height: 1.05;
+  color: #f8fafc;
+}
+
+.actor-movies-title span {
+  color: #f5c518;
+}
+
+.actor-movies-subtitle {
+  margin: 12px 0 0;
+  max-width: 58ch;
+  color: #cbd5e1;
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.actor-movies-chip {
+  flex-shrink: 0;
+  align-self: center;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  box-shadow: 0 10px 30px rgba(2, 6, 23, 0.35);
+  color: #e2e8f0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.actor-movies-grid {
+  margin-top: 8px;
+}
+
+.actor-movies-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 300px;
+  padding: 32px 20px;
+  text-align: center;
+  border-radius: 22px;
+  border: 1px dashed rgba(148, 163, 184, 0.2);
+  background: rgba(15, 23, 42, 0.5);
+  color: #cbd5e1;
+}
+
+.actor-movies-state-loading {
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+}
+
+.actor-movies-empty-icon {
+  margin: 0;
+  font-size: 3rem;
+  line-height: 1;
+  color: #f5c518;
+}
+
+.actor-movies-empty-text {
+  margin: 0;
+  max-width: 48ch;
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+@media (max-width: 768px) {
+  .actor-movies-surface {
+    padding: 20px;
+  }
+
+  .actor-movies-hero {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 22px;
+  }
+
+  .actor-movies-chip {
+    align-self: flex-start;
+  }
+
+  .actor-movies-subtitle {
+    font-size: 0.95rem;
+  }
+
+  .actor-movies-state {
+    min-height: 220px;
+    padding: 26px 16px;
+  }
+}
+
 .movie-card-wrapper {
   position: relative;
   height: 100%;
