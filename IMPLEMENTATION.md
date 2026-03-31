@@ -67,35 +67,48 @@
 
 TheMovie project follows a **Client-Server architecture** with clear separation between frontend and backend:
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    Client (Frontend)                     │
-│                  React.js + Vite                         │
-│  ┌──────────────────────────────────────────────────┐   │
-│  │ Pages: Home, MovieDetail, Search, Login, etc.   │   │
-│  │ Components: Navbar, MovieCard, HeroSlider       │   │
-│  │ Context: Auth, Favorites, KidsMode              │   │
-│  │ Services: API calls, Authentication             │   │
-│  └──────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────┘
-                          ↕ (HTTP/REST)
-┌─────────────────────────────────────────────────────────┐
-│                 Server (Backend)                         │
-│              Node.js + Express.js                        │
-│  ┌──────────────────────────────────────────────────┐   │
-│  │ Routes: /api/auth, /api/movies, /api/comments   │   │
-│  │ Controllers: Handle business logic              │   │
-│  │ Middleware: Auth, Error handling                │   │
-│  │ Models: User, Movie, Comment, History           │   │
-│  │ Utils: Validation, Helper functions             │   │
-│  └──────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────┘
-                          ↕ (MongoDB Driver)
-┌─────────────────────────────────────────────────────────┐
-│                   Database (MongoDB)                     │
-│  Collections: users, movies, comments, history,         │
-│  favorites, actors                                       │
-└─────────────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    subgraph Client["🖥️ CLIENT LAYER (Frontend)"]
+        React["⚛️ React.js 18+ + Vite 4.0+"]
+        Pages["📄 Pages<br/>Home | MovieDetail<br/>Search | Login | Register<br/>Profile | History | Favorites"]
+        Components["🧩 Components<br/>Navbar | MovieCard | HeroSlider<br/>LatestTrailers | Top10Section"]
+        Context["🔄 State Management<br/>AuthContext | FavoriteContext<br/>KidsModeContext"]
+        Services["🌐 Services<br/>API calls | Authentication<br/>Utilities, Toast notifications"]
+
+        React --> Pages
+        React --> Components
+        React --> Context
+        React --> Services
+    end
+
+    subgraph Backend["🖧 SERVER LAYER (Backend)"]
+        NodeExpress["📦 Node.js 18+ + Express.js 4.18+"]
+        Routes["🛣️ Routes<br/>/api/auth | /api/movies<br/>/api/comments | /api/history<br/>/api/user | /api/favorites"]
+        Controllers["⚙️ Controllers<br/>authController | movieController<br/>userController | commentController<br/>historyController"]
+        Middleware["🔐 Middleware<br/>authMiddleware | errorMiddleware<br/>CORS | Error Handling"]
+        Models["📋 Models<br/>User | Movie | Comment<br/>ViewHistory | Favorites"]
+        Utils["🛠️ Utils<br/>appError | asyncHandler<br/>Validation | Helpers"]
+
+        NodeExpress --> Routes
+        NodeExpress --> Controllers
+        NodeExpress --> Middleware
+        NodeExpress --> Models
+        NodeExpress --> Utils
+    end
+
+    subgraph Database["💾 DATABASE LAYER (MongoDB)"]
+        MongoDB["🗄️ MongoDB 5.0+"]
+        Collections["📊 Collections<br/>users | movies | comments<br/>viewHistory | favorites | actors<br/>Indexes on: email, username, title"]
+        MongoDB --> Collections
+    end
+
+    Client -->|HTTP/REST| Backend
+    Backend -->|CRUD Operations| Database
+
+    style Client fill:#e1f5ff
+    style Backend fill:#fff3e0
+    style Database fill:#f3e5f5
 ```
 
 ---
