@@ -167,6 +167,14 @@
   transform: translateY(-2px);
 }
 .hs-btn--info { color: #94a3b8; }
+.hs-btn--fav-active {
+  background: rgba(239, 68, 68, 0.25) !important;
+  border-color: #ef4444 !important;
+  color: #ef4444 !important;
+}
+.hs-btn--fav-active:hover {
+  background: rgba(239, 68, 68, 0.4) !important;
+}
 
 /* ── Right thumbnail strip ── */
 .hs-thumbs {

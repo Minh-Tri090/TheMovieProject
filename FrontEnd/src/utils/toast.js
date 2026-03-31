@@ -13,6 +13,18 @@ export const toast = {
       color: "#fff",
     });
   },
+  info: (title) => {
+    Swal.fire({
+      toast: true,
+      position: "top-end",
+      icon: "info",
+      title: title,
+      showConfirmButton: false,
+      timer: 2000,
+      background: "#1e293b",
+      color: "#fff",
+    });
+  },
   error: (title) => {
     Swal.fire({
       toast: true,

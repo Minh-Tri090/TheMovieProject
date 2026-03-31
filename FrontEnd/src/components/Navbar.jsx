@@ -576,7 +576,24 @@ export default function Navbar() {
               <p>Đang tải...</p>
             ) : (
               actors.map((a) => (
-                <div key={a.id} className="actor-item">
+                <div
+                  key={a.id}
+                  className="actor-item"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => {
+                    closeMenu();
+                    navigate(`/actor/${encodeURIComponent(a.name)}`);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      closeMenu();
+                      navigate(`/actor/${encodeURIComponent(a.name)}`);
+                    }
+                  }}
+                  style={{ cursor: "pointer" }}
+                >
                   <img src={a.avatar} alt={a.name} className="actor-avatar" />
                   <span>{a.name}</span>
                 </div>

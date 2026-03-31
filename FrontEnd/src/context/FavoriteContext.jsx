@@ -17,10 +17,10 @@ export const FavoriteProvider = ({ children }) => {
         try {
           setLoading(true);
           const response = await getFavorites();
-          setFavorites(response.data || []);
+          // Filter ra các phim null (phim đã bị xóa khỏi DB nhưng vẫn còn trong favorites)
+          setFavorites((response.data || []).filter(Boolean));
         } catch (error) {
-          console.error("Lỗi fetch favorites:", error);
-          // Nếu lỗi do token hết hạn (401), có thể xử lý logout ở đây
+          console.error("Lỗi lấy danh sách yêu thích:", error);
         } finally {
           setLoading(false);
         }
@@ -42,21 +42,20 @@ export const FavoriteProvider = ({ children }) => {
     try {
       const movieId = movie._id || movie.id;
 
-      // CHỈ CẦN DÒNG NÀY: Truyền cả ID và Object phim vào hàm API
-      // Chúng ta sẽ cập nhật hàm này ở file api.js sau
       await toggleFavoriteApi(movieId, movie);
 
-      // Cập nhật State tại chỗ (Optimistic UI)
-      setFavorites((prev) => {
-        const isExist = prev.find((m) => (m._id || m.id) === movieId);
-        if (isExist) {
-          toast.info(`Đã bỏ "${movie.title}" khỏi yêu thích`);
-          return prev.filter((m) => (m._id || m.id) !== movieId);
-        } else {
-          toast.success(`Đã thêm "${movie.title}" vào yêu thích`);
-          return [...prev, movie];
-        }
-      });
+      // Kiểm tra trạng thái TRƯỚC khi gọi setFavorites (không để side effect trong state updater)
+      const isExist = favorites.some((m) => (m?._id || m?.id) === movieId);
+
+      if (isExist) {
+        // Xóa khỏi yêu thích
+        setFavorites((prev) => prev.filter((m) => (m?._id || m?.id) !== movieId));
+        toast.info(`Đã bỏ "${movie.title}" khỏi yêu thích`);
+      } else {
+        // Thêm vào yêu thích
+        setFavorites((prev) => [...prev, movie]);
+        toast.success(`Đã thêm "${movie.title}" vào yêu thích`);
+      }
     } catch (error) {
       console.error("Lỗi favorite:", error);
       toast.error("Không thể cập nhật danh sách yêu thích!");
@@ -66,7 +65,7 @@ export const FavoriteProvider = ({ children }) => {
   // 3. Hàm kiểm tra xem phim đã thích chưa
   const isFavorite = (movieId) => {
     // Thêm dấu "?? []" hoặc "|| []" để tránh lỗi undefined
-    return (favorites || []).some((m) => (m._id || m.id) === movieId);
+    return (favorites || []).some((m) => (m?._id || m?.id) === movieId);
   };
 
   return (

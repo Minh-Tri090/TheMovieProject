@@ -1,11 +1,18 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { FaPlay, FaHeart, FaInfoCircle } from "react-icons/fa";
+import { FiHeart } from "react-icons/fi";
+import { useFavorites } from "../context/FavoriteContext";
+import { useAuth } from "../context/AuthContext";
+import { toast } from "../utils/toast";
 import "./HeroSlider.css";
 
 const SLIDE_INTERVAL = 3000;
 
 export default function HeroSlider({ movies }) {
+  const { toggleFavorite, isFavorite } = useFavorites() || {};
+  const { user } = useAuth() || {};
+
   // Pick up to 8 movies that have a backdrop image for the rich visual
   const slides = movies.filter((m) => m.backdrop || m.poster).slice(0, 8);
 
@@ -96,8 +103,17 @@ export default function HeroSlider({ movies }) {
             >
               <FaPlay /> Xem phim
             </Link>
-            <button className="hs-btn hs-btn--fav">
-              <FaHeart />
+            <button
+              className={`hs-btn hs-btn--fav${isFavorite && isFavorite(m.id || m._id) ? " hs-btn--fav-active" : ""}`}
+              onClick={() => {
+                if (!user) return toast.error("Đăng nhập để lưu phim yêu thích nhé!");
+                toggleFavorite && toggleFavorite(m);
+              }}
+              title={isFavorite && isFavorite(m.id || m._id) ? "Bỏ yêu thích" : "Thêm vào yêu thích"}
+            >
+              {isFavorite && isFavorite(m.id || m._id)
+                ? <FaHeart />
+                : <FiHeart />}
             </button>
             <Link
               to={`/movie/${m.id || m._id}`}

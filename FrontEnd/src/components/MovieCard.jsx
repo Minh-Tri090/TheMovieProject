@@ -43,10 +43,8 @@ export default function MovieCard({ movie }) {
   };
 
   const handleCardClick = (e) => {
-    // Chặn chuyển trang khi bấm nút chức năng (Huy)
-    if (e.target.closest(".movie-fav-btn") || e.target.closest(".delete-btn")) {
-      return;
-    }
+    // Chặn chuyển trang khi bấm nút chức năng (Huy) - chỉ còn nút xóa admin
+    if (e.target.closest(".delete-btn")) return;
     navigate(`/movie/${movieId}`);
   };
 
@@ -96,17 +94,6 @@ export default function MovieCard({ movie }) {
         tabIndex={0}
         style={{ opacity: isHovered ? 0 : 1, transition: "opacity 0.2s ease" }}
       >
-        <button
-          type="button"
-          className={`movie-fav-btn ${favorite ? "movie-fav-btn-active" : ""}`}
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleFavorite && toggleFavorite(movie);
-          }}
-        >
-          {favorite ? <AiFillHeart /> : <FiHeart />}
-        </button>
-
         <img src={movie.poster} alt={movie.title} loading="lazy" />
 
         {/* Nút Xóa Admin của Huy */}
@@ -161,7 +148,7 @@ export default function MovieCard({ movie }) {
                 </button>
                 <button
                   className="btn-action-sm"
-                  onClick={() => toggleFavorite && toggleFavorite(movie)}
+                  onClick={(e) => { e.stopPropagation(); toggleFavorite && toggleFavorite(movie); }}
                 >
                   {favorite ? (
                     <AiFillHeart style={{ color: "#ef4444" }} />
