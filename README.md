@@ -42,6 +42,8 @@ node .\server.js
 ```
 
 ### 2. Chạy Frontend
+tạo file .env và copy lệnh dưới đây dán vào file
+VITE_TMDB_API_KEY=7e53636ceb00490e8cf14bef210310e7
 ```bash
 cd FrontEnd
 npm install
