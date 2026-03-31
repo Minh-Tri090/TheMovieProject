@@ -30,9 +30,9 @@ backendApi.interceptors.request.use(
 // --- CÁC TIỆN ÍCH PHỤ TRỢ ---
 const PLACEHOLDER_SVG = encodeURIComponent(
   "<svg xmlns='http://www.w3.org/2000/svg' width='300' height='450'>" +
-  "<rect width='100%' height='100%' fill='#071023'/>" +
-  "<text x='50%' y='50%' fill='#9ca3af' font-family='Arial,Helvetica,sans-serif' font-size='20' dominant-baseline='middle' text-anchor='middle'>No Image</text>" +
-  "</svg>",
+    "<rect width='100%' height='100%' fill='#071023'/>" +
+    "<text x='50%' y='50%' fill='#9ca3af' font-family='Arial,Helvetica,sans-serif' font-size='20' dominant-baseline='middle' text-anchor='middle'>No Image</text>" +
+    "</svg>",
 );
 const PLACEHOLDER = `data:image/svg+xml;charset=UTF-8,${PLACEHOLDER_SVG}`;
 
@@ -94,14 +94,36 @@ function saveCustomMovies(list) {
 }
 
 // --- CÁC HÀM GỌI API TMDB (GIỮ NGUYÊN) ---
-export async function getMovies() {
+export async function getMovies(isKidsMode = false) {
   try {
     // 1. Lấy phim từ TMDB
-    const res = await client.get("/movie/popular");
-    const tmdbMovies = (res.data.results || []).map(normalizeMovie);
+    let tmdbMovies = [];
+    if (isKidsMode) {
+      // Kids Mode: Chỉ lấy phim Hoạt Hình, Gia Đình
+      const animationRes = await client.get("/discover/movie", {
+        params: { with_genres: 16 },
+      }); // 16 = Hoạt Hình
+      const familyRes = await client.get("/discover/movie", {
+        params: { with_genres: 10751 },
+      }); // 10751 = Gia Đình
+      const allTmdbMovies = [
+        ...(animationRes.data.results || []),
+        ...(familyRes.data.results || []),
+      ];
+      // Loại bỏ duplicate
+      tmdbMovies = Array.from(
+        new Map(allTmdbMovies.map((m) => [m.id, m])).values(),
+      ).map(normalizeMovie);
+    } else {
+      // Normal Mode: Phim phổ biến
+      const res = await client.get("/movie/popular");
+      tmdbMovies = (res.data.results || []).map(normalizeMovie);
+    }
 
-    // 2. Lấy phim từ Backend của Huy
-    const backendRes = await backendApi.get("/movies");
+    // 2. Lấy phim từ Backend của Huy (có hỗ trợ Kids Mode)
+    const backendRes = await backendApi.get("/movies", {
+      params: { isKidsMode },
+    });
     const customMovies = backendRes.data.map((movie) => ({
       ...movie,
       id: movie._id, // Map lại ID để React không báo lỗi Key
@@ -122,25 +144,47 @@ export async function getMovies() {
 }
 
 const GENRE_MAP = {
-  "Hành Động": 28, "Phiêu Lưu": 12, "Hoạt Hình": 16, "Hài": 35,
-  "Hình Sự": 80, "Tài Liệu": 99, "Chính Kịch": 18, "Gia Đình": 10751,
-  "Kỳ Ảo": 14, "Lịch Sử": 36, "Kinh Dị": 27, "Âm Nhạc": 10402,
-  "Bí Ẩn": 9648, "Lãng Mạn": 10749, "Khoa Học Viễn Tưởng": 878,
-  "Phim Truyền Hình": 10770, "Gây Cấn": 53, "Chiến Tranh": 10752, "Miền Tây": 37
+  "Hành Động": 28,
+  "Phiêu Lưu": 12,
+  "Hoạt Hình": 16,
+  Hài: 35,
+  "Hình Sự": 80,
+  "Tài Liệu": 99,
+  "Chính Kịch": 18,
+  "Gia Đình": 10751,
+  "Kỳ Ảo": 14,
+  "Lịch Sử": 36,
+  "Kinh Dị": 27,
+  "Âm Nhạc": 10402,
+  "Bí Ẩn": 9648,
+  "Lãng Mạn": 10749,
+  "Khoa Học Viễn Tưởng": 878,
+  "Phim Truyền Hình": 10770,
+  "Gây Cấn": 53,
+  "Chiến Tranh": 10752,
+  "Miền Tây": 37,
 };
 
 export async function getMoviesByGenre(genreName) {
   const genreId = GENRE_MAP[genreName];
   if (!genreId) return searchMovies(genreName);
-  const res = await client.get("/discover/movie", { params: { with_genres: genreId } });
+  const res = await client.get("/discover/movie", {
+    params: { with_genres: genreId },
+  });
   return (res.data.results || []).map(normalizeMovie);
 }
 
 export async function getMoviesByCountry(countryName) {
   // Simple mapping for demo, usually needs region codes
-  const countryParam = countryName === "Âu Mỹ" ? "US" : (countryName === "Trung Quốc" ? "CN" : "");
-  const params = countryParam ? { with_origin_country: countryParam } : { query: countryName };
-  const res = await client.get(countryParam ? "/discover/movie" : "/search/movie", { params });
+  const countryParam =
+    countryName === "Âu Mỹ" ? "US" : countryName === "Trung Quốc" ? "CN" : "";
+  const params = countryParam
+    ? { with_origin_country: countryParam }
+    : { query: countryName };
+  const res = await client.get(
+    countryParam ? "/discover/movie" : "/search/movie",
+    { params },
+  );
   return (res.data.results || []).map(normalizeMovie);
 }
 
@@ -148,7 +192,9 @@ export async function getMoviesByCountry(countryName) {
 // "Local" ở đây là dữ liệu trong Mongo (Backend) thông qua endpoint /api/movies/actor/:actorName
 export async function getLocalMoviesByActor(actorName) {
   if (!actorName) return [];
-  const res = await backendApi.get(`/movies/actor/${encodeURIComponent(actorName)}`);
+  const res = await backendApi.get(
+    `/movies/actor/${encodeURIComponent(actorName)}`,
+  );
   return res.data;
 }
 
@@ -271,7 +317,8 @@ export async function getTrendingMovies() {
 
 // Lấy danh sách phim kèm thumbnail để hiển thị trailer cards
 export async function getTrailerMovies(type = "popular") {
-  const endpoint = type === "now_playing" ? "/movie/now_playing" : "/movie/popular";
+  const endpoint =
+    type === "now_playing" ? "/movie/now_playing" : "/movie/popular";
   const res = await client.get(endpoint);
   return (res.data.results || []).slice(0, 12).map((m) => ({
     id: m.id,
@@ -382,7 +429,10 @@ export async function updateComment(commentId, updateData) {
 
 export async function addReply(commentId, replyData) {
   try {
-    const res = await backendApi.post(`/comments/${commentId}/reply`, replyData);
+    const res = await backendApi.post(
+      `/comments/${commentId}/reply`,
+      replyData,
+    );
     const r = res.data;
     return { ...r, id: r._id };
   } catch (err) {
@@ -395,7 +445,7 @@ export async function updateReply(commentId, replyId, updateData) {
   try {
     const res = await backendApi.put(
       `/comments/${commentId}/reply/${replyId}`,
-      updateData
+      updateData,
     );
     return res.data;
   } catch (err) {
@@ -406,9 +456,23 @@ export async function updateReply(commentId, replyId, updateData) {
 
 // --- HISTORY (LỊCH SỬ XEM PHIM) ---
 // Ghi lịch sử xem phim (gọi khi user bắt đầu xem)
-export async function logHistory({ movieId, tmdbId, movieTitle, moviePoster, progress = 0, duration = 0 }) {
+export async function logHistory({
+  movieId,
+  tmdbId,
+  movieTitle,
+  moviePoster,
+  progress = 0,
+  duration = 0,
+}) {
   try {
-    await backendApi.post("/history/log", { movieId, tmdbId, movieTitle, moviePoster, progress, duration });
+    await backendApi.post("/history/log", {
+      movieId,
+      tmdbId,
+      movieTitle,
+      moviePoster,
+      progress,
+      duration,
+    });
   } catch (err) {
     console.error("Lỗi ghi lịch sử:", err);
   }
@@ -457,4 +521,3 @@ export async function clearAllHistory() {
     return false;
   }
 }
-

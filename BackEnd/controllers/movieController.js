@@ -4,7 +4,19 @@ const AppError = require("../utils/appError");
 const { normalizeMoviePayload } = require("../utils/movie");
 
 async function listMovies(req, res) {
-  const movies = await Movie.find().sort({ createdAt: -1 });
+  const { isKidsMode } = req.query;
+
+  // Lọc phim cho chế độ trẻ em: chỉ Hoạt Hình, Gia Đình, hoặc Cổ Tích
+  const query =
+    isKidsMode === "true"
+      ? {
+          genres: {
+            $in: [/^Hoạt\s+Hình$/i, /^Gia\s+Đình$/i, /^Cổ\s+Tích$/i],
+          },
+        }
+      : {};
+
+  const movies = await Movie.find(query).sort({ createdAt: -1 });
   res.json(movies);
 }
 
