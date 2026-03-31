@@ -1,25 +1,25 @@
 # 🔌 API Design Documentation
 
-## Mục lục
+## Table of Contents
 
-1. [1. Chức năng Đăng nhập/Đăng ký](#1-chức-năng-đăng-nhập-đăng-ký)
-2. [2. Phân quyền Admin/User](#2-phân-quyền-adminuser)
-3. [3. Chế độ Trẻ em](#3-chế-độ-trẻ-em)
-4. [4. Quản lý Trang Phim Yêu thích](#4-quản-lý-trang-phim-yêu-thích)
-5. [5. Danh sách Phim của Diễn viên](#5-danh-sách-phim-của-diễn-viên)
+1. [1. Authentication Features (Login/Register)](#1-authentication-features-loginregister)
+2. [2. Admin/User Role Management](#2-adminuser-role-management)
+3. [3. Kids Mode](#3-kids-mode)
+4. [4. Favorite Movies Management](#4-favorite-movies-management)
+5. [5. Actor's Movies List](#5-actors-movies-list)
 
 ---
 
-## 1. Chức năng Đăng nhập/Đăng ký
+## 1. Authentication Features (Login/Register)
 
-### 1.1 Đăng ký tài khoản
+### 1.1 Register Account
 
-| Thành phần         | Chi tiết                         |
-| ------------------ | -------------------------------- |
-| **Endpoint**       | `/api/auth/register`             |
-| **Method**         | `POST`                           |
-| **Authentication** | Không yêu cầu                    |
-| **Description**    | Đăng ký tài khoản người dùng mới |
+| Component          | Details                     |
+| ------------------ | --------------------------- |
+| **Endpoint**       | `/api/auth/register`        |
+| **Method**         | `POST`                      |
+| **Authentication** | Not required                |
+| **Description**    | Register a new user account |
 
 **Request Format:**
 
@@ -34,17 +34,17 @@
 
 **Request Validation:**
 
-- `username`: Bắt buộc, độ dài 3-20 ký tự, không chứa ký tự đặc biệt
-- `email`: Bắt buộc, định dạng email hợp lệ, duy nhất trong hệ thống
-- `password`: Bắt buộc, tối thiểu 8 ký tự, chứa chữ hoa, chữ thường, số
-- `confirmPassword`: Bắt buộc, phải trùng khớp với password
+- `username`: Required, length 3-20 characters, no special characters
+- `email`: Required, valid email format, unique in the system
+- `password`: Required, minimum 8 characters, must contain uppercase, lowercase, numbers
+- `confirmPassword`: Required, must match password
 
 **Response Success (201):**
 
 ```json
 {
   "success": true,
-  "message": "Đăng ký thành công",
+  "message": "Registration successful",
   "data": {
     "user": {
       "_id": "507f1f77bcf86cd799439011",
@@ -64,21 +64,21 @@
 ```json
 {
   "success": false,
-  "message": "Email đã tồn tại trong hệ thống",
+  "message": "Email already exists in the system",
   "statusCode": 409
 }
 ```
 
 ---
 
-### 1.2 Đăng nhập
+### 1.2 Login
 
-| Thành phần         | Chi tiết                         |
-| ------------------ | -------------------------------- |
-| **Endpoint**       | `/api/auth/login`                |
-| **Method**         | `POST`                           |
-| **Authentication** | Không yêu cầu                    |
-| **Description**    | Xác thực và đăng nhập người dùng |
+| Component          | Details                     |
+| ------------------ | --------------------------- |
+| **Endpoint**       | `/api/auth/login`           |
+| **Method**         | `POST`                      |
+| **Authentication** | Not required                |
+| **Description**    | Authenticate and login user |
 
 **Request Format:**
 
@@ -91,15 +91,15 @@
 
 **Request Validation:**
 
-- `email`: Bắt buộc, định dạng email hợp lệ
-- `password`: Bắt buộc, tối thiểu 8 ký tự
+- `email`: Required, valid email format
+- `password`: Required, minimum 8 characters
 
 **Response Success (200):**
 
 ```json
 {
   "success": true,
-  "message": "Đăng nhập thành công",
+  "message": "Login successful",
   "data": {
     "user": {
       "_id": "507f1f77bcf86cd799439011",
@@ -119,21 +119,21 @@
 ```json
 {
   "success": false,
-  "message": "Email hoặc mật khẩu không chính xác",
+  "message": "Email or password is incorrect",
   "statusCode": 401
 }
 ```
 
 ---
 
-### 1.3 Đăng xuất
+### 1.3 Logout
 
-| Thành phần         | Chi tiết                       |
-| ------------------ | ------------------------------ |
-| **Endpoint**       | `/api/auth/logout`             |
-| **Method**         | `POST`                         |
-| **Authentication** | Yêu cầu JWT Token              |
-| **Description**    | Đăng xuất tài khoản người dùng |
+| Component          | Details             |
+| ------------------ | ------------------- |
+| **Endpoint**       | `/api/auth/logout`  |
+| **Method**         | `POST`              |
+| **Authentication** | Requires JWT Token  |
+| **Description**    | Logout user account |
 
 **Request Headers:**
 
@@ -153,22 +153,22 @@ Content-Type: application/json
 ```json
 {
   "success": true,
-  "message": "Đăng xuất thành công"
+  "message": "Logout successful"
 }
 ```
 
 ---
 
-## 2. Phân quyền Admin/User
+## 2. Admin/User Role Management
 
-### 2.1 Lấy Danh sách Người dùng
+### 2.1 Get Users List
 
-| Thành phần         | Chi tiết                                     |
-| ------------------ | -------------------------------------------- |
-| **Endpoint**       | `/api/users`                                 |
-| **Method**         | `GET`                                        |
-| **Authentication** | Yêu cầu JWT Token + Role Admin               |
-| **Description**    | Lấy danh sách toàn bộ người dùng (chỉ Admin) |
+| Component          | Details                            |
+| ------------------ | ---------------------------------- |
+| **Endpoint**       | `/api/users`                       |
+| **Method**         | `GET`                              |
+| **Authentication** | Requires JWT Token + Admin Role    |
+| **Description**    | Get list of all users (Admin only) |
 
 **Request Headers:**
 
@@ -188,7 +188,7 @@ Content-Type: application/json
 ```json
 {
   "success": true,
-  "message": "Lấy danh sách người dùng thành công",
+  "message": "Get users list successfully",
   "data": {
     "users": [
       {
@@ -221,21 +221,21 @@ Content-Type: application/json
 ```json
 {
   "success": false,
-  "message": "Bạn không có quyền truy cập tài nguyên này",
+  "message": "You do not have permission to access this resource",
   "statusCode": 403
 }
 ```
 
 ---
 
-### 2.2 Cập nhật Quyền Người dùng
+### 2.2 Update User Role
 
-| Thành phần         | Chi tiết                             |
-| ------------------ | ------------------------------------ |
-| **Endpoint**       | `/api/users/:userId/role`            |
-| **Method**         | `PUT`                                |
-| **Authentication** | Yêu cầu JWT Token + Role Admin       |
-| **Description**    | Thay đổi quyền (role) của người dùng |
+| Component          | Details                         |
+| ------------------ | ------------------------------- |
+| **Endpoint**       | `/api/users/:userId/role`       |
+| **Method**         | `PUT`                           |
+| **Authentication** | Requires JWT Token + Admin Role |
+| **Description**    | Change user role (role)         |
 
 **Request Headers:**
 
@@ -246,7 +246,7 @@ Content-Type: application/json
 
 **Path Parameters:**
 
-- `userId`: ID của người dùng cần cập nhật
+- `userId`: ID of the user to update
 
 **Request Format:**
 
@@ -258,14 +258,14 @@ Content-Type: application/json
 
 **Request Validation:**
 
-- `role`: Bắt buộc, giá trị hợp lệ: `"user"` hoặc `"admin"`
+- `role`: Required, valid values: `"user"` or `"admin"`
 
 **Response Success (200):**
 
 ```json
 {
   "success": true,
-  "message": "Cập nhật quyền thành công",
+  "message": "Update role successfully",
   "data": {
     "_id": "507f1f77bcf86cd799439011",
     "username": "john_doe",
@@ -281,21 +281,21 @@ Content-Type: application/json
 ```json
 {
   "success": false,
-  "message": "Người dùng không tồn tại",
+  "message": "User does not exist",
   "statusCode": 404
 }
 ```
 
 ---
 
-### 2.3 Xóa Người dùng
+### 2.3 Delete User
 
-| Thành phần         | Chi tiết                               |
-| ------------------ | -------------------------------------- |
-| **Endpoint**       | `/api/users/:userId`                   |
-| **Method**         | `DELETE`                               |
-| **Authentication** | Yêu cầu JWT Token + Role Admin         |
-| **Description**    | Xóa tài khoản người dùng khỏi hệ thống |
+| Component          | Details                             |
+| ------------------ | ----------------------------------- |
+| **Endpoint**       | `/api/users/:userId`                |
+| **Method**         | `DELETE`                            |
+| **Authentication** | Requires JWT Token + Admin Role     |
+| **Description**    | Delete user account from the system |
 
 **Request Headers:**
 
@@ -306,7 +306,7 @@ Content-Type: application/json
 
 **Path Parameters:**
 
-- `userId`: ID của người dùng cần xóa
+- `userId`: ID of the user to delete
 
 **Request Format:**
 
@@ -319,7 +319,7 @@ Content-Type: application/json
 ```json
 {
   "success": true,
-  "message": "Xóa người dùng thành công",
+  "message": "Delete user successfully",
   "data": {
     "_id": "507f1f77bcf86cd799439011",
     "username": "john_doe",
@@ -333,21 +333,21 @@ Content-Type: application/json
 ```json
 {
   "success": false,
-  "message": "Bạn không thể xóa tài khoản admin",
+  "message": "You cannot delete an admin account",
   "statusCode": 403
 }
 ```
 
 ---
 
-### 2.4 Thêm Phim (Admin)
+### 2.4 Add Movie (Admin)
 
-| Thành phần         | Chi tiết                       |
-| ------------------ | ------------------------------ |
-| **Endpoint**       | `/api/movies`                  |
-| **Method**         | `POST`                         |
-| **Authentication** | Yêu cầu JWT Token + Role Admin |
-| **Description**    | Thêm phim mới vào hệ thống     |
+| Component          | Details                         |
+| ------------------ | ------------------------------- |
+| **Endpoint**       | `/api/movies`                   |
+| **Method**         | `POST`                          |
+| **Authentication** | Requires JWT Token + Admin Role |
+| **Description**    | Add new movie to the system     |
 
 **Request Headers:**
 
@@ -382,18 +382,18 @@ Content-Type: application/json
 
 **Request Validation:**
 
-- `title`: Bắt buộc, độ dài 1-200 ký tự
-- `description`: Bắt buộc, độ dài tối thiểu 10 ký tự
-- `releaseDate`: Bắt buộc, định dạng ISO 8601
-- `genre`: Bắt buộc, mảng không rỗng
-- `duration`: Bắt buộc, số dương > 0
+- `title`: Required, length 1-200 characters
+- `description`: Required, minimum 10 characters
+- `releaseDate`: Required, ISO 8601 format
+- `genre`: Required, non-empty array
+- `duration`: Required, positive number > 0
 
 **Response Success (201):**
 
 ```json
 {
   "success": true,
-  "message": "Thêm phim thành công",
+  "message": "Add movie successfully",
   "data": {
     "_id": "507f1f77bcf86cd799439020",
     "title": "The Avengers",
@@ -407,14 +407,14 @@ Content-Type: application/json
 
 ---
 
-### 2.5 Cập nhật Phim (Admin)
+### 2.5 Update Movie (Admin)
 
-| Thành phần         | Chi tiết                       |
-| ------------------ | ------------------------------ |
-| **Endpoint**       | `/api/movies/:movieId`         |
-| **Method**         | `PUT`                          |
-| **Authentication** | Yêu cầu JWT Token + Role Admin |
-| **Description**    | Cập nhật thông tin phim        |
+| Component          | Details                         |
+| ------------------ | ------------------------------- |
+| **Endpoint**       | `/api/movies/:movieId`          |
+| **Method**         | `PUT`                           |
+| **Authentication** | Requires JWT Token + Admin Role |
+| **Description**    | Update movie information        |
 
 **Request Headers:**
 
@@ -425,7 +425,7 @@ Content-Type: application/json
 
 **Path Parameters:**
 
-- `movieId`: ID của phim cần cập nhật
+- `movieId`: ID of the movie to update
 
 **Request Format:**
 
@@ -443,7 +443,7 @@ Content-Type: application/json
 ```json
 {
   "success": true,
-  "message": "Cập nhật phim thành công",
+  "message": "Update movie successfully",
   "data": {
     "_id": "507f1f77bcf86cd799439020",
     "title": "The Avengers: Endgame",
@@ -455,14 +455,14 @@ Content-Type: application/json
 
 ---
 
-### 2.6 Xóa Phim (Admin)
+### 2.6 Delete Movie (Admin)
 
-| Thành phần         | Chi tiết                       |
-| ------------------ | ------------------------------ |
-| **Endpoint**       | `/api/movies/:movieId`         |
-| **Method**         | `DELETE`                       |
-| **Authentication** | Yêu cầu JWT Token + Role Admin |
-| **Description**    | Xóa phim khỏi hệ thống         |
+| Component          | Details                         |
+| ------------------ | ------------------------------- |
+| **Endpoint**       | `/api/movies/:movieId`          |
+| **Method**         | `DELETE`                        |
+| **Authentication** | Requires JWT Token + Admin Role |
+| **Description**    | Delete movie from the system    |
 
 **Request Headers:**
 
@@ -473,7 +473,7 @@ Content-Type: application/json
 
 **Path Parameters:**
 
-- `movieId`: ID của phim cần xóa
+- `movieId`: ID of the movie to delete
 
 **Request Format:**
 
@@ -486,7 +486,7 @@ Content-Type: application/json
 ```json
 {
   "success": true,
-  "message": "Xóa phim thành công",
+  "message": "Delete movie successfully",
   "data": {
     "_id": "507f1f77bcf86cd799439020",
     "title": "The Avengers"
@@ -496,16 +496,16 @@ Content-Type: application/json
 
 ---
 
-## 3. Chế độ Trẻ em
+## 3. Kids Mode
 
-### 3.1 Bật/Tắt Chế độ Trẻ em
+### 3.1 Enable/Disable Kids Mode
 
-| Thành phần         | Chi tiết                                            |
-| ------------------ | --------------------------------------------------- |
-| **Endpoint**       | `/api/user/kids-mode`                               |
-| **Method**         | `PUT`                                               |
-| **Authentication** | Yêu cầu JWT Token                                   |
-| **Description**    | Bật hoặc tắt chế độ trẻ em cho tài khoản người dùng |
+| Component          | Details                                      |
+| ------------------ | -------------------------------------------- |
+| **Endpoint**       | `/api/user/kids-mode`                        |
+| **Method**         | `PUT`                                        |
+| **Authentication** | Requires JWT Token                           |
+| **Description**    | Enable or disable kids mode for user account |
 
 **Request Headers:**
 
@@ -525,15 +525,15 @@ Content-Type: application/json
 
 **Request Validation:**
 
-- `kidsMode`: Bắt buộc, kiểu boolean
-- `password`: Bắt buộc khi bật chế độ trẻ em (để xác thực), tối thiểu 8 ký tự
+- `kidsMode`: Required, boolean type
+- `password`: Required when enabling kids mode (for authentication), minimum 8 characters
 
 **Response Success (200):**
 
 ```json
 {
   "success": true,
-  "message": "Cập nhật chế độ trẻ em thành công",
+  "message": "Update kids mode successfully",
   "data": {
     "_id": "507f1f77bcf86cd799439011",
     "username": "john_doe",
@@ -549,21 +549,21 @@ Content-Type: application/json
 ```json
 {
   "success": false,
-  "message": "Mật khẩu không chính xác",
+  "message": "Password is incorrect",
   "statusCode": 401
 }
 ```
 
 ---
 
-### 3.2 Lấy danh sách Phim Chế độ Trẻ em
+### 3.2 Get Kids Mode Movies List
 
-| Thành phần         | Chi tiết                              |
-| ------------------ | ------------------------------------- |
-| **Endpoint**       | `/api/movies/kids-mode`               |
-| **Method**         | `GET`                                 |
-| **Authentication** | Không yêu cầu                         |
-| **Description**    | Lấy danh sách phim phù hợp với trẻ em |
+| Component          | Details                              |
+| ------------------ | ------------------------------------ |
+| **Endpoint**       | `/api/movies/kids-mode`              |
+| **Method**         | `GET`                                |
+| **Authentication** | Not required                         |
+| **Description**    | Get list of movies suitable for kids |
 
 **Query Parameters:**
 
@@ -576,7 +576,7 @@ Content-Type: application/json
 ```json
 {
   "success": true,
-  "message": "Lấy danh sách phim chế độ trẻ em thành công",
+  "message": "Get kids mode movies list successfully",
   "data": {
     "movies": [
       {
@@ -610,16 +610,16 @@ Content-Type: application/json
 
 ---
 
-## 4. Quản lý Trang Phim Yêu thích
+## 4. Favorite Movies Management
 
-### 4.1 Lấy danh sách Phim Yêu thích
+### 4.1 Get Favorite Movies List
 
-| Thành phần         | Chi tiết                                    |
-| ------------------ | ------------------------------------------- |
-| **Endpoint**       | `/api/user/favorites`                       |
-| **Method**         | `GET`                                       |
-| **Authentication** | Yêu cầu JWT Token                           |
-| **Description**    | Lấy danh sách phim yêu thích của người dùng |
+| Component          | Details                            |
+| ------------------ | ---------------------------------- |
+| **Endpoint**       | `/api/user/favorites`              |
+| **Method**         | `GET`                              |
+| **Authentication** | Requires JWT Token                 |
+| **Description**    | Get list of user's favorite movies |
 
 **Request Headers:**
 
@@ -639,7 +639,7 @@ Content-Type: application/json
 ```json
 {
   "success": true,
-  "message": "Lấy danh sách phim yêu thích thành công",
+  "message": "Get favorite movies list successfully",
   "data": {
     "favorites": [
       {
@@ -677,14 +677,14 @@ Content-Type: application/json
 
 ---
 
-### 4.2 Thêm Phim vào Yêu thích
+### 4.2 Add Movie to Favorites
 
-| Thành phần         | Chi tiết                          |
-| ------------------ | --------------------------------- |
-| **Endpoint**       | `/api/favorites`                  |
-| **Method**         | `POST`                            |
-| **Authentication** | Yêu cầu JWT Token                 |
-| **Description**    | Thêm phim vào danh sách yêu thích |
+| Component          | Details                     |
+| ------------------ | --------------------------- |
+| **Endpoint**       | `/api/favorites`            |
+| **Method**         | `POST`                      |
+| **Authentication** | Requires JWT Token          |
+| **Description**    | Add movie to favorites list |
 
 **Request Headers:**
 
@@ -703,14 +703,14 @@ Content-Type: application/json
 
 **Request Validation:**
 
-- `movieId`: Bắt buộc, phải là ID phim hợp lệ
+- `movieId`: Required, must be a valid movie ID
 
 **Response Success (201):**
 
 ```json
 {
   "success": true,
-  "message": "Thêm vào yêu thích thành công",
+  "message": "Add to favorites successfully",
   "data": {
     "_id": "507f1f77bcf86cd799439032",
     "userId": "507f1f77bcf86cd799439011",
@@ -725,21 +725,21 @@ Content-Type: application/json
 ```json
 {
   "success": false,
-  "message": "Phim này đã có trong danh sách yêu thích",
+  "message": "This movie is already in the favorites list",
   "statusCode": 409
 }
 ```
 
 ---
 
-### 4.3 Xóa Phim khỏi Yêu thích
+### 4.3 Remove Movie from Favorites
 
-| Thành phần         | Chi tiết                          |
-| ------------------ | --------------------------------- |
-| **Endpoint**       | `/api/favorites/:movieId`         |
-| **Method**         | `DELETE`                          |
-| **Authentication** | Yêu cầu JWT Token                 |
-| **Description**    | Xóa phim khỏi danh sách yêu thích |
+| Component          | Details                          |
+| ------------------ | -------------------------------- |
+| **Endpoint**       | `/api/favorites/:movieId`        |
+| **Method**         | `DELETE`                         |
+| **Authentication** | Requires JWT Token               |
+| **Description**    | Remove movie from favorites list |
 
 **Request Headers:**
 
@@ -750,7 +750,7 @@ Content-Type: application/json
 
 **Path Parameters:**
 
-- `movieId`: ID của phim cần xóa
+- `movieId`: ID of the movie to remove
 
 **Request Format:**
 
@@ -763,7 +763,7 @@ Content-Type: application/json
 ```json
 {
   "success": true,
-  "message": "Xóa khỏi yêu thích thành công",
+  "message": "Remove from favorites successfully",
   "data": {
     "favoriteId": "507f1f77bcf86cd799439032"
   }
@@ -775,21 +775,21 @@ Content-Type: application/json
 ```json
 {
   "success": false,
-  "message": "Phim không có trong danh sách yêu thích",
+  "message": "Movie is not in the favorites list",
   "statusCode": 404
 }
 ```
 
 ---
 
-### 4.4 Kiểm tra Phim có trong Yêu thích không
+### 4.4 Check if Movie is in Favorites
 
-| Thành phần         | Chi tiết                                                 |
-| ------------------ | -------------------------------------------------------- |
-| **Endpoint**       | `/api/favorites/:movieId/check`                          |
-| **Method**         | `GET`                                                    |
-| **Authentication** | Yêu cầu JWT Token                                        |
-| **Description**    | Kiểm tra xem phim có trong danh sách yêu thích hay không |
+| Component          | Details                                 |
+| ------------------ | --------------------------------------- |
+| **Endpoint**       | `/api/favorites/:movieId/check`         |
+| **Method**         | `GET`                                   |
+| **Authentication** | Requires JWT Token                      |
+| **Description**    | Check if movie is in the favorites list |
 
 **Request Headers:**
 
@@ -800,7 +800,7 @@ Content-Type: application/json
 
 **Path Parameters:**
 
-- `movieId`: ID của phim cần kiểm tra
+- `movieId`: ID of the movie to check
 
 **Response Success (200):**
 
@@ -816,27 +816,27 @@ Content-Type: application/json
 
 ---
 
-## 5. Danh sách Phim của Diễn viên
+## 5. Actor's Movies List
 
-### 5.1 Lấy thông tin Diễn viên
+### 5.1 Get Actor Information
 
-| Thành phần         | Chi tiết                                 |
-| ------------------ | ---------------------------------------- |
-| **Endpoint**       | `/api/actors/:actorId`                   |
-| **Method**         | `GET`                                    |
-| **Authentication** | Không yêu cầu                            |
-| **Description**    | Lấy thông tin chi tiết của một diễn viên |
+| Component          | Details                              |
+| ------------------ | ------------------------------------ |
+| **Endpoint**       | `/api/actors/:actorId`               |
+| **Method**         | `GET`                                |
+| **Authentication** | Not required                         |
+| **Description**    | Get detailed information of an actor |
 
 **Path Parameters:**
 
-- `actorId`: ID của diễn viên
+- `actorId`: Actor ID
 
 **Response Success (200):**
 
 ```json
 {
   "success": true,
-  "message": "Lấy thông tin diễn viên thành công",
+  "message": "Get actor information successfully",
   "data": {
     "_id": "607f1f77bcf86cd799439001",
     "name": "Robert Downey Jr.",
@@ -851,18 +851,18 @@ Content-Type: application/json
 
 ---
 
-### 5.2 Lấy danh sách Phim của Diễn viên
+### 5.2 Get Actor's Movies List
 
-| Thành phần         | Chi tiết                                                |
-| ------------------ | ------------------------------------------------------- |
-| **Endpoint**       | `/api/actors/:actorId/movies`                           |
-| **Method**         | `GET`                                                   |
-| **Authentication** | Không yêu cầu                                           |
-| **Description**    | Lấy danh sách toàn bộ phim có sự tham gia của diễn viên |
+| Component          | Details                                           |
+| ------------------ | ------------------------------------------------- |
+| **Endpoint**       | `/api/actors/:actorId/movies`                     |
+| **Method**         | `GET`                                             |
+| **Authentication** | Not required                                      |
+| **Description**    | Get list of all movies with actor's participation |
 
 **Path Parameters:**
 
-- `actorId`: ID của diễn viên
+- `actorId`: Actor ID
 
 **Query Parameters:**
 
@@ -875,7 +875,7 @@ Content-Type: application/json
 ```json
 {
   "success": true,
-  "message": "Lấy danh sách phim của diễn viên thành công",
+  "message": "Get actor's movies list successfully",
   "data": {
     "actor": {
       "_id": "607f1f77bcf86cd799439001",
@@ -929,21 +929,21 @@ Content-Type: application/json
 ```json
 {
   "success": false,
-  "message": "Diễn viên không tồn tại",
+  "message": "Actor does not exist",
   "statusCode": 404
 }
 ```
 
 ---
 
-### 5.3 Tìm kiếm Diễn viên
+### 5.3 Search Actors
 
-| Thành phần         | Chi tiết                    |
-| ------------------ | --------------------------- |
-| **Endpoint**       | `/api/actors/search`        |
-| **Method**         | `GET`                       |
-| **Authentication** | Không yêu cầu               |
-| **Description**    | Tìm kiếm diễn viên theo tên |
+| Component          | Details               |
+| ------------------ | --------------------- |
+| **Endpoint**       | `/api/actors/search`  |
+| **Method**         | `GET`                 |
+| **Authentication** | Not required          |
+| **Description**    | Search actors by name |
 
 **Query Parameters:**
 
@@ -956,7 +956,7 @@ Content-Type: application/json
 ```json
 {
   "success": true,
-  "message": "Tìm kiếm diễn viên thành công",
+  "message": "Search actors successfully",
   "data": {
     "results": [
       {
@@ -986,71 +986,71 @@ Content-Type: application/json
 
 ---
 
-## 📋 Bảng Tóm tắt API Endpoints
+## 📋 API Endpoints Summary Table
 
-| #      | Chức năng             | Endpoint                        | Method | Auth | Quyền  |
-| ------ | --------------------- | ------------------------------- | ------ | ---- | ------ |
-| **1**  | Đăng ký               | `/api/auth/register`            | POST   | ❌   | -      |
-| **2**  | Đăng nhập             | `/api/auth/login`               | POST   | ❌   | -      |
-| **3**  | Đăng xuất             | `/api/auth/logout`              | POST   | ✅   | Tất cả |
-| **4**  | Lấy DS người dùng     | `/api/users`                    | GET    | ✅   | Admin  |
-| **5**  | Cập nhật quyền        | `/api/users/:userId/role`       | PUT    | ✅   | Admin  |
-| **6**  | Xóa người dùng        | `/api/users/:userId`            | DELETE | ✅   | Admin  |
-| **7**  | Thêm phim             | `/api/movies`                   | POST   | ✅   | Admin  |
-| **8**  | Cập nhật phim         | `/api/movies/:movieId`          | PUT    | ✅   | Admin  |
-| **9**  | Xóa phim              | `/api/movies/:movieId`          | DELETE | ✅   | Admin  |
-| **10** | Bật/Tắt chế độ trẻ em | `/api/user/kids-mode`           | PUT    | ✅   | Tất cả |
-| **11** | DS phim chế độ trẻ em | `/api/movies/kids-mode`         | GET    | ❌   | -      |
-| **12** | DS phim yêu thích     | `/api/user/favorites`           | GET    | ✅   | Tất cả |
-| **13** | Thêm yêu thích        | `/api/favorites`                | POST   | ✅   | Tất cả |
-| **14** | Xóa yêu thích         | `/api/favorites/:movieId`       | DELETE | ✅   | Tất cả |
-| **15** | Kiểm tra yêu thích    | `/api/favorites/:movieId/check` | GET    | ✅   | Tất cả |
-| **16** | Thông tin diễn viên   | `/api/actors/:actorId`          | GET    | ❌   | -      |
-| **17** | DS phim của diễn viên | `/api/actors/:actorId/movies`   | GET    | ❌   | -      |
-| **18** | Tìm kiếm diễn viên    | `/api/actors/search`            | GET    | ❌   | -      |
+| #      | Feature                  | Endpoint                        | Method | Auth | Permission |
+| ------ | ------------------------ | ------------------------------- | ------ | ---- | ---------- |
+| **1**  | Register                 | `/api/auth/register`            | POST   | ❌   | -          |
+| **2**  | Login                    | `/api/auth/login`               | POST   | ❌   | -          |
+| **3**  | Logout                   | `/api/auth/logout`              | POST   | ✅   | All        |
+| **4**  | Get Users List           | `/api/users`                    | GET    | ✅   | Admin      |
+| **5**  | Update Role              | `/api/users/:userId/role`       | PUT    | ✅   | Admin      |
+| **6**  | Delete User              | `/api/users/:userId`            | DELETE | ✅   | Admin      |
+| **7**  | Add Movie                | `/api/movies`                   | POST   | ✅   | Admin      |
+| **8**  | Update Movie             | `/api/movies/:movieId`          | PUT    | ✅   | Admin      |
+| **9**  | Delete Movie             | `/api/movies/:movieId`          | DELETE | ✅   | Admin      |
+| **10** | Enable/Disable Kids Mode | `/api/user/kids-mode`           | PUT    | ✅   | All        |
+| **11** | Kids Mode Movies         | `/api/movies/kids-mode`         | GET    | ❌   | -          |
+| **12** | Get Favorites            | `/api/user/favorites`           | GET    | ✅   | All        |
+| **13** | Add Favorite             | `/api/favorites`                | POST   | ✅   | All        |
+| **14** | Remove Favorite          | `/api/favorites/:movieId`       | DELETE | ✅   | All        |
+| **15** | Check Favorite           | `/api/favorites/:movieId/check` | GET    | ✅   | All        |
+| **16** | Actor Info               | `/api/actors/:actorId`          | GET    | ❌   | -          |
+| **17** | Actor Movies             | `/api/actors/:actorId/movies`   | GET    | ❌   | -          |
+| **18** | Search Actors            | `/api/actors/search`            | GET    | ❌   | -          |
 
 ---
 
-## 🔐 Cấp độ Bảo mật
+## 🔐 Security Levels
 
 ### Authentication
 
-- Sử dụng **JWT (JSON Web Token)** cho xác thực
-- Token được gửi qua header: `Authorization: Bearer <token>`
-- Token hết hạn sau: **7 ngày**
+- Uses **JWT (JSON Web Token)** for authentication
+- Token sent via header: `Authorization: Bearer <token>`
+- Token expires after: **7 days**
 
 ### Authorization
 
-- **Public Endpoints**: Không yêu cầu xác thực
-- **User Endpoints**: Yêu cầu JWT token hợp lệ
-- **Admin Endpoints**: Yêu cầu JWT token + role `admin`
+- **Public Endpoints**: No authentication required
+- **User Endpoints**: Requires valid JWT token
+- **Admin Endpoints**: Requires JWT token + `admin` role
 
 ### Password Security
 
-- Mật khẩu được mã hóa bằng **bcryptjs** (salt rounds: 10)
-- Mật khẩu tối thiểu: **8 ký tự**
-- Phải chứa: chữ hoa, chữ thường, số
+- Passwords encrypted with **bcryptjs** (salt rounds: 10)
+- Minimum password length: **8 characters**
+- Must contain: uppercase, lowercase, numbers
 
 ---
 
 ## 📊 HTTP Status Codes
 
-| Mã      | Ý nghĩa      | Ví dụ                        |
-| ------- | ------------ | ---------------------------- |
-| **200** | OK           | Yêu cầu thành công           |
-| **201** | Created      | Tạo resource thành công      |
-| **400** | Bad Request  | Dữ liệu request không hợp lệ |
-| **401** | Unauthorized | Xác thực thất bại            |
-| **403** | Forbidden    | Không có quyền truy cập      |
-| **404** | Not Found    | Resource không tồn tại       |
-| **409** | Conflict     | Dữ liệu trùng lặp            |
-| **500** | Server Error | Lỗi server                   |
+| Code    | Meaning      | Example                       |
+| ------- | ------------ | ----------------------------- |
+| **200** | OK           | Request successful            |
+| **201** | Created      | Resource created successfully |
+| **400** | Bad Request  | Invalid request data          |
+| **401** | Unauthorized | Authentication failed         |
+| **403** | Forbidden    | No access permission          |
+| **404** | Not Found    | Resource does not exist       |
+| **409** | Conflict     | Data duplicate                |
+| **500** | Server Error | Server error                  |
 
 ---
 
-## 🧪 Ví dụ Requests với cURL
+## 🧪 cURL Request Examples
 
-### Đăng ký
+### Register
 
 ```bash
 curl -X POST http://localhost:5000/api/auth/register \
@@ -1063,7 +1063,7 @@ curl -X POST http://localhost:5000/api/auth/register \
   }'
 ```
 
-### Đăng nhập
+### Login
 
 ```bash
 curl -X POST http://localhost:5000/api/auth/login \
@@ -1074,14 +1074,14 @@ curl -X POST http://localhost:5000/api/auth/login \
   }'
 ```
 
-### Lấy Danh sách Phim của Diễn viên
+### Get Actor's Movies List
 
 ```bash
 curl -X GET "http://localhost:5000/api/actors/607f1f77bcf86cd799439001/movies?page=1&limit=12" \
   -H "Content-Type: application/json"
 ```
 
-### Thêm vào Yêu thích
+### Add to Favorites
 
 ```bash
 curl -X POST http://localhost:5000/api/favorites \
@@ -1094,14 +1094,14 @@ curl -X POST http://localhost:5000/api/favorites \
 
 ---
 
-## 📝 Ghi chú
+## 📝 Notes
 
-- Tất cả response đều có cấu trúc: `{ success: boolean, message: string, data: object }`
-- Timestamps sử dụng định dạng ISO 8601
-- Pagination mặc định: page=1, limit=10
-- CORS được cấu hình cho frontend URL
-- Rate limiting áp dụng cho tất cả endpoints
+- All responses have structure: `{ success: boolean, message: string, data: object }`
+- Timestamps use ISO 8601 format
+- Default pagination: page=1, limit=10
+- CORS configured for frontend URL
+- Rate limiting applied to all endpoints
 
 ---
 
-**Document này được tạo cho mục đích báo cáo dự án. Phiên bản 1.0 - Tháng 1/2024**
+**Document created for project reporting purposes. Version 1.0 - January 2024**
